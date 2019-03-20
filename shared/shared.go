@@ -1,6 +1,6 @@
 package shared
 
-const SAMPLE_SIZE = 5
+const SAMPLE_SIZE = 10000
 const SERVER_PORT = 46000
 
 type Request struct {

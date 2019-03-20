@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"jankenpo/shared"
 	"net"
@@ -15,8 +14,14 @@ import (
 func PlayJanKenPo(auto bool) {
 	var player1Move, player2Move string
 
+	addr, err := net.ResolveUDPAddr("udp", "localhost:"+strconv.Itoa(shared.SERVER_PORT))
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	// connect to server
-	conn, err := net.Dial("tcp", "localhost:"+strconv.Itoa(shared.SERVER_PORT))
+	conn, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -32,10 +37,8 @@ func PlayJanKenPo(auto bool) {
 		}
 	}()
 
-	// create a decoder/encoder
-	//jsonDecoder := json.NewDecoder(conn)
-	//jsonEncoder := json.NewEncoder(conn)
 	var msgFromServer shared.Reply
+	message := make([]byte, 8)
 
 	// loop
 	start := time.Now()
@@ -72,19 +75,16 @@ func PlayJanKenPo(auto bool) {
 		msgToServer := player1Move + " " + player2Move //shared.Request{player1Move, player2Move}
 
 		// send request to server
-		//err = jsonEncoder.Encode(msgToServer)
-		// send to socket
-		_, err := fmt.Fprintf(conn, msgToServer+"\n")
+		_, err := conn.Write([]byte(msgToServer + "\n"))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
 		// receive reply from server
-		//err = jsonDecoder.Decode(&msgFromServer)
-		message, err := bufio.NewReader(conn).ReadString('\n')
-		message = strings.TrimSuffix(message, "\n")
-		result, err := strconv.Atoi(message)
+		n, _, err := conn.ReadFromUDP(message)
+		messageS := strings.TrimSuffix(string(message[:n]), "\n")
+		result, err := strconv.Atoi(messageS)
 		if err != nil {
 			fmt.Println(err)
 			result = -1
