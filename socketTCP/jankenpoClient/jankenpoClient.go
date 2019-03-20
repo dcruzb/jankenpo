@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"bufio"
 	"fmt"
 	"jankenpo/shared"
 	"net"
@@ -25,9 +25,8 @@ func PlayJanKenPo(auto bool) {
 	fmt.Println()
 
 	// create a decoder/encoder
-	jsonDecoder := json.NewDecoder(conn)
-	jsonEncoder := json.NewEncoder(conn)
-
+	//jsonDecoder := json.NewDecoder(conn)
+	//jsonEncoder := json.NewEncoder(conn)
 	var msgFromServer shared.Reply
 
 	// loop
@@ -42,7 +41,8 @@ func PlayJanKenPo(auto bool) {
 			fmt.Print("\033[8m") // Hide input
 			_, err := fmt.Scanln(&player1Move)
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				os.Exit(1)
 			}
 			fmt.Print("\033[28m") // Show input
 			player1Move = strings.ToUpper(player1Move)
@@ -51,7 +51,8 @@ func PlayJanKenPo(auto bool) {
 			fmt.Print("\033[8m") // Hide input
 			_, err = fmt.Scanln(&player2Move)
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				os.Exit(1)
 			}
 			fmt.Print("\033[28m") // Show input
 			player2Move = strings.ToUpper(player2Move)
@@ -60,29 +61,40 @@ func PlayJanKenPo(auto bool) {
 		fmt.Println("Jogadas => Player 1: ", string(player1Move), "Player 2:", string(player2Move))
 
 		// prepare request
-		msgToServer := shared.Request{player1Move, player2Move}
+		msgToServer := player1Move + " " + player2Move //shared.Request{player1Move, player2Move}
 
 		// send request to server
-		err = jsonEncoder.Encode(msgToServer)
+		//err = jsonEncoder.Encode(msgToServer)
+		// send to socket
+		_, err := fmt.Fprintf(conn, msgToServer+"\n")
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
 		// receive reply from server
-		err = jsonDecoder.Decode(&msgFromServer)
+		//err = jsonDecoder.Decode(&msgFromServer)
+		message, err := bufio.NewReader(conn).ReadString('\n')
+		message = strings.TrimSuffix(message, "\n")
+		result, err := strconv.Atoi(message)
+		if err != nil {
+			fmt.Println(err)
+			result = -1
+		}
+		msgFromServer = shared.Reply{result}
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
+		fmt.Println()
 		switch msgFromServer.Result {
-		case -1:
-			fmt.Println("Invalid move")
+		case 1, 2:
+			fmt.Println("The winner is Player", msgFromServer.Result)
 		case 0:
 			fmt.Println("Draw")
 		default:
-			fmt.Println("The winner is Player", msgFromServer.Result)
+			fmt.Println("Invalid move")
 		}
 		fmt.Println("------------------------------------------------------------------")
 		fmt.Println()
@@ -96,7 +108,7 @@ func main() {
 	wg.Add(1)
 
 	go func() {
-		PlayJanKenPo(true)
+		PlayJanKenPo(false)
 		wg.Done()
 	}()
 

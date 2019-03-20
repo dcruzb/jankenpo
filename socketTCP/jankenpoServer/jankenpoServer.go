@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"bufio"
 	"fmt"
 	"jankenpo/shared"
 	"net"
@@ -76,29 +76,36 @@ func StartJankenpoServer() {
 	}()
 
 	// cria um cofificador/decodificador Json
-	jsonDecoder := json.NewDecoder(conn)
-	jsonEncoder := json.NewEncoder(conn)
+	//jsonDecoder := json.NewDecoder(conn)
+	//jsonEncoder := json.NewEncoder(conn)
 	var msgFromClient shared.Request
 
 	fmt.Println("Servidor pronto para receber solicitações (TCP)...")
 	for idx := 0; idx < shared.SAMPLE_SIZE; idx++ {
 
-		// recebe solicitações do cliente e decodifica-as
-		err = jsonDecoder.Decode(&msgFromClient)
+		// recebe solicitações do cliente
+		message, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
+		}
+		fmt.Println("Message received: ", message)
+		_, err = fmt.Sscanf(message, "%s %s", &msgFromClient.Player1, &msgFromClient.Player2)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
 		// processa a solicitação
 		r := ProcessaSolicitacao(msgFromClient)
 
 		// envia resposta ao cliente
-		msgToClient := shared.Reply{r}
-		err = jsonEncoder.Encode(msgToClient)
+		//msgToClient := shared.Reply{r}
+		//err = jsonEncoder.Encode(msgToClient)
+		_, err = conn.Write([]byte(strconv.Itoa(r) + "\n"))
 		if err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 	}
 }
