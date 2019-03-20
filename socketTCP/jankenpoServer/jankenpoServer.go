@@ -10,6 +10,7 @@ import (
 	"sync"
 )
 
+// Check if 'a' is in array 'list'
 func inArray(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
@@ -19,6 +20,7 @@ func inArray(a string, list []string) bool {
 	return false
 }
 
+// Analyze the moves and returns de winner
 func ProcessaSolicitacao(request shared.Request) int {
 	possibilities := []string{"P", "A", "T"}
 
@@ -57,7 +59,7 @@ func ProcessaSolicitacao(request shared.Request) int {
 
 func StartJankenpoServer() {
 	fmt.Println("Initializing server")
-	// escuta na porta tcp 4600
+	// escuta na porta tcp configurada
 	ln, _ := net.Listen("tcp", ":"+strconv.Itoa(shared.SERVER_PORT))
 
 	// aceita conexões na porta
@@ -75,9 +77,6 @@ func StartJankenpoServer() {
 		}
 	}()
 
-	// cria um cofificador/decodificador Json
-	//jsonDecoder := json.NewDecoder(conn)
-	//jsonEncoder := json.NewEncoder(conn)
 	var msgFromClient shared.Request
 
 	fmt.Println("Servidor pronto para receber solicitações (TCP)...")
@@ -100,8 +99,6 @@ func StartJankenpoServer() {
 		r := ProcessaSolicitacao(msgFromClient)
 
 		// envia resposta ao cliente
-		//msgToClient := shared.Reply{r}
-		//err = jsonEncoder.Encode(msgToClient)
 		_, err = conn.Write([]byte(strconv.Itoa(r) + "\n"))
 		if err != nil {
 			fmt.Println(err)

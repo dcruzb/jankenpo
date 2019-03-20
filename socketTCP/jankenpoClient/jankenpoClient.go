@@ -33,8 +33,6 @@ func PlayJanKenPo(auto bool) {
 	}()
 
 	// create a decoder/encoder
-	//jsonDecoder := json.NewDecoder(conn)
-	//jsonEncoder := json.NewEncoder(conn)
 	var msgFromServer shared.Reply
 
 	// loop
@@ -72,8 +70,6 @@ func PlayJanKenPo(auto bool) {
 		msgToServer := player1Move + " " + player2Move //shared.Request{player1Move, player2Move}
 
 		// send request to server
-		//err = jsonEncoder.Encode(msgToServer)
-		// send to socket
 		_, err := fmt.Fprintf(conn, msgToServer+"\n")
 		if err != nil {
 			fmt.Println(err)
@@ -81,7 +77,6 @@ func PlayJanKenPo(auto bool) {
 		}
 
 		// receive reply from server
-		//err = jsonDecoder.Decode(&msgFromServer)
 		message, err := bufio.NewReader(conn).ReadString('\n')
 		message = strings.TrimSuffix(message, "\n")
 		result, err := strconv.Atoi(message)

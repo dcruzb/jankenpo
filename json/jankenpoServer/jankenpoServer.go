@@ -57,7 +57,7 @@ func ProcessaSolicitacao(request shared.Request) int {
 
 func StartJankenpoServer() {
 	fmt.Println("Initializing server")
-	// escuta na porta tcp 4600
+	// escuta na porta tcp configurada
 	ln, _ := net.Listen("tcp", ":"+strconv.Itoa(shared.SERVER_PORT))
 
 	// aceita conexões na porta

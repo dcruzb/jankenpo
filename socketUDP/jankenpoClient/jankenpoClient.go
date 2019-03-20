@@ -38,7 +38,7 @@ func PlayJanKenPo(auto bool) {
 	}()
 
 	var msgFromServer shared.Reply
-	message := make([]byte, 8)
+	message := make([]byte, 4)
 
 	// loop
 	start := time.Now()

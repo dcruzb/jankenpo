@@ -65,7 +65,7 @@ func StartJankenpoServer() {
 		os.Exit(1)
 	}
 
-	// escuta na porta tcp 4600
+	// escuta na porta tcp configurada
 	conn, err := net.ListenUDP("udp", addr)
 	if err != nil {
 		fmt.Println(err)
@@ -82,7 +82,7 @@ func StartJankenpoServer() {
 
 	// cria um cofificador/decodificador Json
 	var msgFromClient shared.Request
-	message := make([]byte, 8)
+	message := make([]byte, 4)
 
 	fmt.Println("Servidor pronto para receber solicitações (UDP)...")
 	for idx := 0; idx < shared.SAMPLE_SIZE; idx++ {
