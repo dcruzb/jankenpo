@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -34,12 +35,24 @@ func PlayJanKenPo(auto bool) {
 		if auto {
 			player1Move = "A"
 			player2Move = "P"
-		}else {
+		} else {
 			fmt.Println("Favor informar a jogada do Player 1: (P = Pedra, A = Papel, T = Tesoura):")
-			fmt.Scanln(&player1Move)
+			fmt.Print("\033[8m") // Hide input
+			_, err := fmt.Scanln(&player1Move)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Print("\033[28m") // Show input
+			player1Move = strings.ToUpper(player1Move)
 
 			fmt.Println("Favor informar a jogada do Player 2: (P = Pedra, A = Papel, T = Tesoura):")
-			fmt.Scanln(&player2Move)
+			fmt.Print("\033[8m") // Hide input
+			_, err = fmt.Scanln(&player2Move)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Print("\033[28m") // Show input
+			player2Move = strings.ToUpper(player2Move)
 		}
 
 		fmt.Println("Jogadas => Player 1: ", string(player1Move), "Player 2:", string(player2Move))
@@ -62,13 +75,14 @@ func PlayJanKenPo(auto bool) {
 		}
 
 		switch msgFromServer.Result {
-			case -1:
-				fmt.Println("Invalid move")
-			case 0:
-				fmt.Println("Draw")
-			default:
-				fmt.Println("The winner is Player", msgFromServer.Result)
+		case -1:
+			fmt.Println("Invalid move")
+		case 0:
+			fmt.Println("Draw")
+		default:
+			fmt.Println("The winner is Player", msgFromServer.Result)
 		}
+		fmt.Println()
 	}
 	elapsed := time.Since(start)
 	fmt.Printf("Tempo: %s \n", elapsed)

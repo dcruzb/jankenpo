@@ -20,9 +20,12 @@ func inArray(a string, list []string) bool {
 }
 
 func ProcessaSolicitacao(request shared.Request) int {
-	possibilities := []string{"P","A","T"}
+	possibilities := []string{"P", "A", "T"}
 
 	if !inArray(request.Player1, possibilities) {
+		return -1
+	}
+	if !inArray(request.Player2, possibilities) {
 		return -1
 	}
 	if request.Player1 == request.Player2 {
@@ -30,19 +33,19 @@ func ProcessaSolicitacao(request shared.Request) int {
 	}
 	switch request.Player1 {
 	case "P":
-		if request.Player2 == "A"{
+		if request.Player2 == "A" {
 			return 2
 		} else {
 			return 1
 		}
 	case "A":
-		if request.Player2 == "P"{
+		if request.Player2 == "P" {
 			return 1
 		} else {
 			return 2
 		}
 	case "T":
-		if request.Player2 == "P"{
+		if request.Player2 == "P" {
 			return 2
 		} else {
 			return 1
@@ -65,7 +68,12 @@ func StartJankenpoServer() {
 	}
 
 	// fecha o socket
-	defer conn.Close()
+	defer func() {
+		err := conn.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	// cria um cofificador/decodificador Json
 	jsonDecoder := json.NewDecoder(conn)
