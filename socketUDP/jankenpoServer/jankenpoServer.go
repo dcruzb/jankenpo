@@ -93,7 +93,7 @@ func StartJankenpoServer() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		fmt.Println("Message received: ", message)
+		//fmt.Println("Message received: ", message)
 		_, err = fmt.Sscanf(string(message[:n]), "%s %s", &msgFromClient.Player1, &msgFromClient.Player2)
 		if err != nil {
 			fmt.Println(err)
