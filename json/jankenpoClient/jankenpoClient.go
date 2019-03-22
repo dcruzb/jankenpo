@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 )
@@ -34,30 +33,8 @@ func PlayJanKenPo(auto bool) {
 	start := time.Now()
 	for i := 0; i < shared.SAMPLE_SIZE; i++ {
 		fmt.Println("Game", i)
-		if auto {
-			player1Move = "A"
-			player2Move = "P"
-		} else {
-			fmt.Println("Favor informar a jogada do Player 1: (P = Pedra, A = Papel, T = Tesoura):")
-			fmt.Print("\033[8m") // Hide input
-			_, err := fmt.Scanln(&player1Move)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Print("\033[28m") // Show input
-			player1Move = strings.ToUpper(player1Move)
 
-			fmt.Println("Favor informar a jogada do Player 2: (P = Pedra, A = Papel, T = Tesoura):")
-			fmt.Print("\033[8m") // Hide input
-			_, err = fmt.Scanln(&player2Move)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Print("\033[28m") // Show input
-			player2Move = strings.ToUpper(player2Move)
-		}
-
-		fmt.Println("Jogadas => Player 1: ", string(player1Move), "Player 2:", string(player2Move))
+		player1Move, player2Move = shared.GetMoves(auto)
 
 		// prepare request
 		msgToServer := shared.Request{player1Move, player2Move}
@@ -96,7 +73,7 @@ func main() {
 	wg.Add(1)
 
 	go func() {
-		PlayJanKenPo(true)
+		PlayJanKenPo(shared.AUTO)
 		wg.Done()
 	}()
 

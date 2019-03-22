@@ -10,51 +10,6 @@ import (
 	"sync"
 )
 
-func inArray(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
-}
-
-func ProcessaSolicitacao(request shared.Request) int {
-	possibilities := []string{"P", "A", "T"}
-
-	if !inArray(request.Player1, possibilities) {
-		return -1
-	}
-	if !inArray(request.Player2, possibilities) {
-		return -1
-	}
-	if request.Player1 == request.Player2 {
-		return 0
-	}
-	switch request.Player1 {
-	case "P":
-		if request.Player2 == "A" {
-			return 2
-		} else {
-			return 1
-		}
-	case "A":
-		if request.Player2 == "P" {
-			return 1
-		} else {
-			return 2
-		}
-	case "T":
-		if request.Player2 == "P" {
-			return 2
-		} else {
-			return 1
-		}
-	default:
-		return -1
-	}
-}
-
 func StartJankenpoServer() {
 	fmt.Println("Initializing server")
 
@@ -101,7 +56,7 @@ func StartJankenpoServer() {
 		}
 
 		// processa a solicitação
-		r := ProcessaSolicitacao(msgFromClient)
+		r := shared.ProcessaSolicitacao(msgFromClient)
 
 		// envia resposta ao cliente
 		_, err = conn.WriteTo([]byte(strconv.Itoa(r)+"\n"), addr)
