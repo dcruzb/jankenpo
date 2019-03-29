@@ -1,27 +1,27 @@
-package main
+package socketJson
 
 import (
 	"encoding/json"
-	"fmt"
 	"jankenpo/shared"
 	"net"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 )
 
-func PlayJanKenPo(auto bool) {
+const NAME = "jankenpo/socketJson/client"
+
+func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	var player1Move, player2Move string
 
 	// connect to server
-	conn, err := net.Dial("tcp", "localhost:"+strconv.Itoa(shared.SERVER_PORT))
+	conn, err := net.Dial("tcp", "localhost:"+strconv.Itoa(shared.JSON_PORT))
 	if err != nil {
-		fmt.Println(err)
+		shared.PrintlnError(NAME, err)
 		os.Exit(1)
 	}
-	fmt.Println("Connected successfully")
-	fmt.Println()
+	shared.PrintlnInfo(NAME, "Connected successfully")
+	shared.PrintlnInfo(NAME)
 
 	// create a decoder/encoder
 	jsonDecoder := json.NewDecoder(conn)
@@ -32,7 +32,7 @@ func PlayJanKenPo(auto bool) {
 	// loop
 	start := time.Now()
 	for i := 0; i < shared.SAMPLE_SIZE; i++ {
-		fmt.Println("Game", i)
+		shared.PrintlnMessage(NAME, "Game", i)
 
 		player1Move, player2Move = shared.GetMoves(auto)
 
@@ -42,40 +42,28 @@ func PlayJanKenPo(auto bool) {
 		// send request to server
 		err = jsonEncoder.Encode(msgToServer)
 		if err != nil {
-			fmt.Println(err)
+			shared.PrintlnError(NAME, err)
 			os.Exit(1)
 		}
 
 		// receive reply from server
 		err = jsonDecoder.Decode(&msgFromServer)
 		if err != nil {
-			fmt.Println(err)
+			shared.PrintlnError(NAME, err)
 			os.Exit(1)
 		}
 
 		switch msgFromServer.Result {
 		case -1:
-			fmt.Println("Invalid move")
+			shared.PrintlnMessage(NAME, "Invalid move")
 		case 0:
-			fmt.Println("Draw")
+			shared.PrintlnMessage(NAME, "Draw")
 		default:
-			fmt.Println("The winner is Player", msgFromServer.Result)
+			shared.PrintlnMessage(NAME, "The winner is Player", msgFromServer.Result)
 		}
-		fmt.Println("------------------------------------------------------------------")
-		fmt.Println()
+		shared.PrintlnMessage(NAME, "------------------------------------------------------------------")
+		shared.PrintlnMessage(NAME)
 	}
-	elapsed := time.Since(start)
-	fmt.Printf("Tempo: %s \n", elapsed)
-}
-
-func main() {
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	go func() {
-		PlayJanKenPo(shared.AUTO)
-		wg.Done()
-	}()
-
-	wg.Wait()
+	elapsed = time.Since(start)
+	return elapsed
 }

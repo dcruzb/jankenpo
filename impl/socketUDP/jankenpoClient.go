@@ -1,33 +1,33 @@
-package main
+package socketUDP
 
 import (
-	"fmt"
 	"jankenpo/shared"
 	"net"
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
-func PlayJanKenPo(auto bool) {
+const NAME = "jankenpo/socketUDP/client"
+
+func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	var player1Move, player2Move string
 
-	addr, err := net.ResolveUDPAddr("udp", "localhost:"+strconv.Itoa(shared.SERVER_PORT))
+	addr, err := net.ResolveUDPAddr("udp", "localhost:"+strconv.Itoa(shared.UDP_PORT))
 	if err != nil {
-		fmt.Println(err)
+		shared.PrintlnError(NAME, err)
 		os.Exit(1)
 	}
 
 	// connect to server
 	conn, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
-		fmt.Println(err)
+		shared.PrintlnError(NAME, err)
 		os.Exit(1)
 	}
-	fmt.Println("Connected successfully")
-	fmt.Println()
+	shared.PrintlnInfo(NAME, "Connected successfully")
+	shared.PrintlnInfo(NAME)
 
 	// fecha o socket no final
 	defer func() {
@@ -43,7 +43,7 @@ func PlayJanKenPo(auto bool) {
 	// loop
 	start := time.Now()
 	for i := 0; i < shared.SAMPLE_SIZE; i++ {
-		fmt.Println("Game", i)
+		shared.PrintlnMessage(NAME, "Game", i)
 
 		player1Move, player2Move = shared.GetMoves(auto)
 
@@ -53,7 +53,7 @@ func PlayJanKenPo(auto bool) {
 		// send request to server
 		_, err := conn.Write([]byte(msgToServer + "\n"))
 		if err != nil {
-			fmt.Println(err)
+			shared.PrintlnError(NAME, err)
 			os.Exit(1)
 		}
 
@@ -62,39 +62,27 @@ func PlayJanKenPo(auto bool) {
 		messageS := strings.TrimSuffix(string(message[:n]), "\n")
 		result, err := strconv.Atoi(messageS)
 		if err != nil {
-			fmt.Println(err)
+			shared.PrintlnError(NAME, err)
 			result = -1
 		}
 		msgFromServer = shared.Reply{result}
 		if err != nil {
-			fmt.Println(err)
+			shared.PrintlnError(NAME, err)
 			os.Exit(1)
 		}
 
-		fmt.Println()
+		shared.PrintlnMessage(NAME)
 		switch msgFromServer.Result {
 		case 1, 2:
-			fmt.Println("The winner is Player", msgFromServer.Result)
+			shared.PrintlnMessage(NAME, "The winner is Player", msgFromServer.Result)
 		case 0:
-			fmt.Println("Draw")
+			shared.PrintlnMessage(NAME, "Draw")
 		default:
-			fmt.Println("Invalid move")
+			shared.PrintlnMessage(NAME, "Invalid move")
 		}
-		fmt.Println("------------------------------------------------------------------")
-		fmt.Println()
+		shared.PrintlnMessage(NAME, "------------------------------------------------------------------")
+		shared.PrintlnMessage(NAME)
 	}
-	elapsed := time.Since(start)
-	fmt.Printf("Tempo: %s \n", elapsed)
-}
-
-func main() {
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	go func() {
-		PlayJanKenPo(shared.AUTO)
-		wg.Done()
-	}()
-
-	wg.Wait()
+	elapsed = time.Since(start)
+	return elapsed
 }

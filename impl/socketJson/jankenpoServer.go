@@ -1,24 +1,22 @@
-package main
+package socketJson
 
 import (
 	"encoding/json"
-	"fmt"
 	"jankenpo/shared"
 	"net"
 	"os"
 	"strconv"
-	"sync"
 )
 
 func StartJankenpoServer() {
-	fmt.Println("Initializing server")
+	shared.PrintlnInfo(NAME, "Initializing server Json")
 	// escuta na porta tcp configurada
-	ln, _ := net.Listen("tcp", ":"+strconv.Itoa(shared.SERVER_PORT))
+	ln, _ := net.Listen("tcp", ":"+strconv.Itoa(shared.JSON_PORT))
 
 	// aceita conexões na porta
 	conn, err := ln.Accept()
 	if err != nil {
-		fmt.Println(err)
+		shared.PrintlnError(NAME, err)
 		os.Exit(1)
 	}
 
@@ -35,13 +33,13 @@ func StartJankenpoServer() {
 	jsonEncoder := json.NewEncoder(conn)
 	var msgFromClient shared.Request
 
-	fmt.Println("Servidor pronto para receber solicitações (TCP)...")
+	shared.PrintlnInfo(NAME, "Servidor pronto para receber solicitações (Json over TCP)...")
 	for idx := 0; idx < shared.SAMPLE_SIZE; idx++ {
 
 		// recebe solicitações do cliente e decodifica-as
 		err = jsonDecoder.Decode(&msgFromClient)
 		if err != nil {
-			fmt.Println(err)
+			shared.PrintlnError(NAME, err)
 			return
 		}
 
@@ -52,20 +50,9 @@ func StartJankenpoServer() {
 		msgToClient := shared.Reply{r}
 		err = jsonEncoder.Encode(msgToClient)
 		if err != nil {
-			fmt.Println(err)
+			shared.PrintlnError(NAME, err)
 			return
 		}
 	}
-}
-
-func main() {
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	go func() {
-		StartJankenpoServer()
-		wg.Done()
-	}()
-
-	wg.Wait()
+	shared.PrintlnInfo(NAME, "Servidor finalizado (Json over TCP)")
 }
