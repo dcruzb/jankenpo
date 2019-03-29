@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"jankenpo/impl/socketJson"
+	jsonServer "jankenpo/impl/socketJson/server"
 	tcpServer "jankenpo/impl/socketTCP/server"
-	"jankenpo/impl/socketUDP"
+	udpServer "jankenpo/impl/socketUDP/server"
 	"sync"
 )
 
@@ -29,7 +29,7 @@ func main() {
 	if *udp {
 		wg.Add(1)
 		go func() {
-			socketUDP.StartJankenpoServer()
+			udpServer.StartJankenpoServer()
 			wg.Done()
 		}()
 	}
@@ -37,7 +37,7 @@ func main() {
 	if *json {
 		wg.Add(1)
 		go func() {
-			socketJson.StartJankenpoServer()
+			jsonServer.StartJankenpoServer()
 			wg.Done()
 		}()
 	}

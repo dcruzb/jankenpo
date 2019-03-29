@@ -20,10 +20,10 @@ const UDP_PORT = 47000
 const JSON_PORT = 48000
 
 // Debug
-var SHOW_MESSAGES = []int{0, 1, 2}
-
 const AUTO = true
 const SAMPLE_SIZE = 3
+
+var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
 
 type DebugLevel int
 
@@ -52,7 +52,7 @@ type Client struct {
 
 func Println(program string, messageLevel DebugLevel, message ...interface{}) {
 	if len(SHOW_MESSAGES) > 0 {
-		if inArrayInt(messageLevel.ToInt(), SHOW_MESSAGES) {
+		if inArrayDL(messageLevel, SHOW_MESSAGES) {
 			switch messageLevel {
 			case INFO:
 				log.Println(program, "- INFO -", message)
@@ -95,7 +95,7 @@ func inArray(a string, list []string) bool {
 	return false
 }
 
-func inArrayInt(a int, list []int) bool {
+func inArrayDL(a DebugLevel, list []DebugLevel) bool {
 	for _, b := range list {
 		if b == a {
 			return true

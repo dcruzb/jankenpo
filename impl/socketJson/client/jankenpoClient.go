@@ -1,27 +1,21 @@
-package socketUDP
+package client
 
 import (
+	"encoding/json"
 	"jankenpo/shared"
 	"net"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
-const NAME = "jankenpo/socketUDP/client"
+const NAME = "jankenpo/socketJson/client"
 
 func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	var player1Move, player2Move string
 
-	addr, err := net.ResolveUDPAddr("udp", "localhost:"+strconv.Itoa(shared.UDP_PORT))
-	if err != nil {
-		shared.PrintlnError(NAME, err)
-		os.Exit(1)
-	}
-
 	// connect to server
-	conn, err := net.DialUDP("udp", nil, addr)
+	conn, err := net.Dial("tcp", "localhost:"+strconv.Itoa(shared.JSON_PORT))
 	if err != nil {
 		shared.PrintlnError(NAME, err)
 		os.Exit(1)
@@ -29,16 +23,11 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	shared.PrintlnInfo(NAME, "Connected successfully")
 	shared.PrintlnInfo(NAME)
 
-	// fecha o socket no final
-	defer func() {
-		err := conn.Close()
-		if err != nil {
-			panic(err)
-		}
-	}()
+	// create a decoder/encoder
+	jsonDecoder := json.NewDecoder(conn)
+	jsonEncoder := json.NewEncoder(conn)
 
 	var msgFromServer shared.Reply
-	message := make([]byte, 4)
 
 	// loop
 	start := time.Now()
@@ -48,37 +37,29 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		player1Move, player2Move = shared.GetMoves(auto)
 
 		// prepare request
-		msgToServer := player1Move + " " + player2Move //shared.Request{player1Move, player2Move}
+		msgToServer := shared.Request{player1Move, player2Move}
 
 		// send request to server
-		_, err := conn.Write([]byte(msgToServer + "\n"))
+		err = jsonEncoder.Encode(msgToServer)
 		if err != nil {
 			shared.PrintlnError(NAME, err)
 			os.Exit(1)
 		}
 
 		// receive reply from server
-		n, _, err := conn.ReadFromUDP(message)
-		messageS := strings.TrimSuffix(string(message[:n]), "\n")
-		result, err := strconv.Atoi(messageS)
-		if err != nil {
-			shared.PrintlnError(NAME, err)
-			result = -1
-		}
-		msgFromServer = shared.Reply{result}
+		err = jsonDecoder.Decode(&msgFromServer)
 		if err != nil {
 			shared.PrintlnError(NAME, err)
 			os.Exit(1)
 		}
 
-		shared.PrintlnMessage(NAME)
 		switch msgFromServer.Result {
-		case 1, 2:
-			shared.PrintlnMessage(NAME, "The winner is Player", msgFromServer.Result)
+		case -1:
+			shared.PrintlnMessage(NAME, "Invalid move")
 		case 0:
 			shared.PrintlnMessage(NAME, "Draw")
 		default:
-			shared.PrintlnMessage(NAME, "Invalid move")
+			shared.PrintlnMessage(NAME, "The winner is Player", msgFromServer.Result)
 		}
 		shared.PrintlnMessage(NAME, "------------------------------------------------------------------")
 		shared.PrintlnMessage(NAME)

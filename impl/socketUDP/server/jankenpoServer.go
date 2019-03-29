@@ -1,4 +1,4 @@
-package socketUDP
+package server
 
 import (
 	"fmt"
@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 )
+
+const NAME = "jankenpo/socketUDP/server"
 
 func StartJankenpoServer() {
 	shared.PrintlnInfo(NAME, "Initializing server UDP")

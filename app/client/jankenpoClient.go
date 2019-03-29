@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"jankenpo/impl/socketJson"
+	jsonClient "jankenpo/impl/socketJson/client"
 	tcpClient "jankenpo/impl/socketTCP/client"
-	"jankenpo/impl/socketUDP"
+	udpClient "jankenpo/impl/socketUDP/client"
 	"jankenpo/shared"
 	"sync"
 	"time"
@@ -13,8 +13,8 @@ import (
 
 func main() {
 	tcp := flag.Bool("tcp", true, "Identifies if TCP client should start")
-	udp := flag.Bool("udp", false, "Identifies if UDP client should start")
-	json := flag.Bool("json", false, "Identifies if Json over TCP client should start")
+	udp := flag.Bool("udp", true, "Identifies if UDP client should start")
+	json := flag.Bool("json", true, "Identifies if Json over TCP client should start")
 	rpc := flag.Bool("rpc", false, "Identifies if RPC client should start")
 	rmq := flag.Bool("rmq", false, "Identifies if RabbitMQ client should start")
 	auto := flag.Bool("auto", shared.AUTO, "Identifies if the program should play in 'Auto' mode")
@@ -38,7 +38,7 @@ func main() {
 	if *udp {
 		wg.Add(1)
 		go func() {
-			elapsedUDP = socketUDP.PlayJanKenPo(*auto)
+			elapsedUDP = udpClient.PlayJanKenPo(*auto)
 			wg.Done()
 		}()
 	}
@@ -46,7 +46,7 @@ func main() {
 	if *json {
 		wg.Add(1)
 		go func() {
-			elapsedJson = socketJson.PlayJanKenPo(*auto)
+			elapsedJson = jsonClient.PlayJanKenPo(*auto)
 			wg.Done()
 		}()
 	}

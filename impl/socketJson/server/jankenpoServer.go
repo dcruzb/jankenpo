@@ -1,4 +1,4 @@
-package socketJson
+package server
 
 import (
 	"encoding/json"
@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 )
+
+const NAME = "jankenpo/socketJson/server"
 
 func StartJankenpoServer() {
 	shared.PrintlnInfo(NAME, "Initializing server Json")
