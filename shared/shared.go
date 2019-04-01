@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"net"
 	"runtime"
 	"strconv"
 	"strings"
@@ -14,14 +13,15 @@ import (
 const NAME = "jankenpo/shared"
 
 // Config
-const CONECTIONS = 1
+const CONECTIONS = 5
 const TCP_PORT = 46000
 const UDP_PORT = 47000
 const JSON_PORT = 48000
+const RPC_PORT = 49000
 
 // Debug
 const AUTO = true
-const SAMPLE_SIZE = 3
+const SAMPLE_SIZE = 10000
 
 var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
 
@@ -46,8 +46,9 @@ type Reply struct {
 	Result int
 }
 
-type Client struct {
-	conn net.Conn
+func (rq Request) Play(request Request, reply *Reply) error {
+	*reply = Reply{ProcessaSolicitacao(request)}
+	return nil
 }
 
 func Println(program string, messageLevel DebugLevel, message ...interface{}) {
@@ -55,11 +56,14 @@ func Println(program string, messageLevel DebugLevel, message ...interface{}) {
 		if inArrayDL(messageLevel, SHOW_MESSAGES) {
 			switch messageLevel {
 			case INFO:
-				log.Println(program, "- INFO -", message)
+				var logs []interface{}
+				logs = append(logs, program, "- INFO -")
+				logs = append(logs, message...)
+				log.Println(logs...)
 			case MESSAGE:
 				fmt.Println(message...)
 			case ERROR:
-				_, file, line, ok := runtime.Caller(1)
+				_, file, line, ok := runtime.Caller(2)
 				if !ok {
 					file = "???"
 					line = 0
@@ -105,7 +109,7 @@ func inArrayDL(a DebugLevel, list []DebugLevel) bool {
 }
 
 func randomMove() (move string) {
-	//return "A" //For better performance dont return a random move
+	return "A" //For better performance dont return a random move
 
 	rd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	mv := rd.Intn(3)

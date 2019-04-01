@@ -1,25 +1,28 @@
-package socketTCP
+package rpc
 
 import (
 	"bufio"
 	"encoding/json"
 	"jankenpo/shared"
+	"log"
 	"net"
+	"net/http"
+	"net/rpc"
 	"os"
 )
 
-const NAME = "jankenpo/socketTCP"
+const NAME = "jankenpo/rpc"
 
 type Client struct {
 	connection net.Conn
 }
 
-type SocketTCP struct {
+type RPC struct {
 	ip                 string
 	port               string
 	useJson            bool
 	listener           net.Listener
-	serverConnection   net.Conn
+	rpcClient          rpc.Client
 	initialConnections int
 	clients            []Client
 
@@ -27,56 +30,76 @@ type SocketTCP struct {
 	jsonDecoder *json.Decoder
 }
 
-func (st *SocketTCP) StartServer(ip, port string, useJson bool, initialConnections int) {
+func (this *RPC) StartServer(ip, port string, useJson bool, initialConnections int) {
+	request := new(shared.Request)
+	// Publish the receivers methods
+	err := rpc.Register(request)
+	if err != nil {
+		shared.PrintlnError(NAME, "Error while registering RPC receivers methods. Details: ", err)
+	}
+	// Register a HTTP handler
+	rpc.HandleHTTP()
+
 	ln, err := net.Listen("tcp", ip+":"+port)
 	if err != nil {
-		shared.PrintlnError(NAME, "Error while starting TCP server. Details: ", err)
+		shared.PrintlnError(NAME, "Error while starting RPC server. Details: ", err)
 	}
-	st.listener = ln
-	st.useJson = useJson
-	st.initialConnections = initialConnections
-	st.clients = make([]Client, st.initialConnections)
+
+	err = http.Serve(ln, nil) // TODO move to ConnectToServer
+	if err != nil {
+		shared.PrintlnError(NAME, "Error while starting RPC server. Details: ", err)
+	}
+
+	this.listener = ln
+	this.useJson = useJson
+	this.initialConnections = initialConnections
+	this.clients = make([]Client, this.initialConnections)
 }
 
-func (st *SocketTCP) StopServer() {
-	err := st.listener.Close()
+func (this *RPC) StopServer() {
+	err := this.listener.Close()
 	if err != nil {
 		shared.PrintlnError(NAME, "Error while stoping server. Details:", err)
 	}
 }
 
-func (st *SocketTCP) ConnectToServer(ip, port string) {
+func (this *RPC) ConnectToServer(ip, port string) {
 	// connect to server
-	conn, err := net.Dial("tcp", ip+":"+port)
+	rpcClient, err := rpc.DialHTTP("tcp", ip+":"+port)
 	if err != nil {
-		shared.PrintlnError(NAME, err)
+		log.Fatal("Connection error: ", err)
 	}
 
-	st.serverConnection = conn
+	/*conn, err := net.Dial("tcp", ip +":"+ port)
+	if err != nil {
+		shared.PrintlnError(NAME, err)
+	}*/
+
+	this.rpcClient = *rpcClient
 }
 
-func (st *SocketTCP) WaitForConnection(cliIdx int) (cl *Client) { // TODO if cliIdx >= inicitalConnections => need to append to the slice
+func (this *RPC) WaitForConnection(cliIdx int) (cl *Client) { // TODO if cliIdx >= inicitalConnections => need to append to the slice
 	// aceita conexões na porta
-	conn, err := st.listener.Accept()
+	conn, err := this.listener.Accept()
 	if err != nil {
 		shared.PrintlnError(NAME, "Error while waiting for connection", err)
 	}
 
-	cl = &st.clients[cliIdx]
+	cl = &this.clients[cliIdx]
 
 	cl.connection = conn
 
-	if st.useJson {
+	if this.useJson {
 		// cria um cofificador/decodificador Json
-		st.jsonDecoder = json.NewDecoder(conn)
-		st.jsonEncoder = json.NewEncoder(conn)
+		this.jsonDecoder = json.NewDecoder(conn)
+		this.jsonEncoder = json.NewEncoder(conn)
 	}
 
 	return cl
 }
 
-func (st *SocketTCP) CloseConnection() {
-	err := st.serverConnection.Close()
+func (this *RPC) CloseConnection() {
+	err := this.rpcClient.Close()
 	if err != nil {
 		shared.PrintlnError(NAME, err)
 	}
@@ -89,23 +112,30 @@ func (cl *Client) CloseConnection() {
 	}
 }
 
-func (st *SocketTCP) Read() (message string) {
-	if st.useJson {
+func (this *RPC) Call(serviceMethod string, request shared.Request) (reply *shared.Reply) {
+
+	this.rpcClient.Call(serviceMethod, request, &reply)
+
+	return reply
+}
+
+/*func (rpc *RPC) Read() (message string) {
+	if rpc.useJson {
 
 	} else {
 		var err error
 		// recebe solicitações do cliente
-		message, err = bufio.NewReader(st.serverConnection).ReadString('\n')
+		message, err = bufio.NewReader(rpc.serverConnection).ReadString('\n')
 		if err != nil {
 			shared.PrintlnError(NAME, "Error while reading message from socket TCP. Details:", err)
 		}
 	}
 
 	return message
-}
+}*/
 
-func (st *SocketTCP) Write(message string) {
-	// envia resposta
+func (this *RPC) Write(message string) {
+	// envia resporpca
 
 	// Vários tipos diferentes de se escrever utilizando Writer, todos funcionam
 	//_, err := fmt.Fprintf(conn, msgToServer+"\n")
@@ -118,11 +148,11 @@ func (st *SocketTCP) Write(message string) {
 	reader.Flush()*/
 	//_, err := io.WriteString(conn, msgToServer+"\n")
 
-	_, err := st.serverConnection.Write([]byte(message + "\n"))
+	/*_, err := rpc.serverConnection.Write([]byte(message + "\n"))
 	if err != nil {
 		shared.PrintlnError(NAME, "Error while writing message to socket TCP. Details:", err)
 		os.Exit(1)
-	}
+	}*/
 }
 
 func (cl *Client) Read() (message string) {

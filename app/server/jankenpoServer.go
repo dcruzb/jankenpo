@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	rpcServer "jankenpo/impl/RPC/server"
 	jsonServer "jankenpo/impl/socketJson/server"
 	tcpServer "jankenpo/impl/socketTCP/server"
 	udpServer "jankenpo/impl/socketUDP/server"
@@ -9,10 +10,10 @@ import (
 )
 
 func main() {
-	tcp := flag.Bool("tcp", true, "Identifies if TCP server should start")
+	tcp := flag.Bool("tcp", false, "Identifies if TCP server should start")
 	udp := flag.Bool("udp", false, "Identifies if UDP server should start")
 	json := flag.Bool("json", false, "Identifies if Json over TCP server should start")
-	rpc := flag.Bool("rpc", false, "Identifies if RPC server should start")
+	rpc := flag.Bool("rpc", true, "Identifies if RPC server should start")
 	rmq := flag.Bool("rmq", false, "Identifies if RabbitMQ server should start")
 	flag.Parse()
 
@@ -45,6 +46,7 @@ func main() {
 	if *rpc {
 		wg.Add(1)
 		go func() {
+			rpcServer.StartJankenpoServer()
 			wg.Done()
 		}()
 	}
