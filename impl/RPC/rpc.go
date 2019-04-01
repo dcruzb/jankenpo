@@ -45,11 +45,6 @@ func (this *RPC) StartServer(ip, port string, useJson bool, initialConnections i
 		shared.PrintlnError(NAME, "Error while starting RPC server. Details: ", err)
 	}
 
-	err = http.Serve(ln, nil) // TODO move to ConnectToServer
-	if err != nil {
-		shared.PrintlnError(NAME, "Error while starting RPC server. Details: ", err)
-	}
-
 	this.listener = ln
 	this.useJson = useJson
 	this.initialConnections = initialConnections
@@ -79,13 +74,18 @@ func (this *RPC) ConnectToServer(ip, port string) {
 }
 
 func (this *RPC) WaitForConnection(cliIdx int) (cl *Client) { // TODO if cliIdx >= inicitalConnections => need to append to the slice
-	// aceita conexões na porta
-	conn, err := this.listener.Accept()
+	err := http.Serve(this.listener, nil)
 	if err != nil {
-		shared.PrintlnError(NAME, "Error while waiting for connection", err)
+		shared.PrintlnError(NAME, "Error while starting RPC server. Details: ", err)
 	}
 
-	cl = &this.clients[cliIdx]
+	// aceita conexões na porta
+	/*conn, err := this.listener.Accept()
+	if err != nil {
+		shared.PrintlnError(NAME, "Error while waiting for connection", err)
+	}*/
+
+	/*cl = &this.clients[cliIdx]
 
 	cl.connection = conn
 
@@ -95,7 +95,7 @@ func (this *RPC) WaitForConnection(cliIdx int) (cl *Client) { // TODO if cliIdx 
 		this.jsonEncoder = json.NewEncoder(conn)
 	}
 
-	return cl
+	return cl*/
 }
 
 func (this *RPC) CloseConnection() {

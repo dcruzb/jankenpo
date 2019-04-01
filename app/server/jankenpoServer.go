@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	tcp := flag.Bool("tcp", false, "Identifies if TCP server should start")
+	tcp := flag.Bool("tcp", true, "Identifies if TCP server should start")
 	udp := flag.Bool("udp", false, "Identifies if UDP server should start")
 	json := flag.Bool("json", false, "Identifies if Json over TCP server should start")
 	rpc := flag.Bool("rpc", true, "Identifies if RPC server should start")

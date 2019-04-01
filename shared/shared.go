@@ -23,7 +23,7 @@ const RPC_PORT = 49000
 const AUTO = true
 const SAMPLE_SIZE = 10000
 
-var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
+var SHOW_MESSAGES = []DebugLevel{ERROR} //, INFO, MESSAGE}
 
 type DebugLevel int
 
