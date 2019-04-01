@@ -10,10 +10,10 @@ import (
 
 func main() {
 	tcp := flag.Bool("tcp", true, "Identifies if TCP server should start")
-	udp := flag.Bool("udp", true, "Identifies if UDP server should start")
-	json := flag.Bool("json", true, "Identifies if Json over TCP server should start")
-	rpc := flag.Bool("rpc", true, "Identifies if RPC server should start")
-	rmq := flag.Bool("rmq", true, "Identifies if RabbitMQ server should start")
+	udp := flag.Bool("udp", false, "Identifies if UDP server should start")
+	json := flag.Bool("json", false, "Identifies if Json over TCP server should start")
+	rpc := flag.Bool("rpc", false, "Identifies if RPC server should start")
+	rmq := flag.Bool("rmq", false, "Identifies if RabbitMQ server should start")
 	flag.Parse()
 
 	var wg sync.WaitGroup
