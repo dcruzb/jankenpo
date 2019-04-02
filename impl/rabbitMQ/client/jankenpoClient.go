@@ -1,7 +1,7 @@
 package client
 
 import (
-	"jankenpo/impl/socketTCP"
+	"jankenpo/impl/rabbitMQ"
 	"jankenpo/shared"
 	"os"
 	"strconv"
@@ -9,20 +9,20 @@ import (
 	"time"
 )
 
-const NAME = "jankenpo/socketTCP/client"
+const NAME = "jankenpo/rabbitMQ/client"
 
 func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	var player1Move, player2Move string
-	var sockTCP socketTCP.SocketTCP
+	var rMQ rabbitMQ.RabbitMQ
 
 	// connect to server
-	sockTCP.ConnectToServer("localhost", strconv.Itoa(shared.TCP_PORT))
+	rMQ.ConnectToServer("localhost", strconv.Itoa(shared.TCP_PORT))
 
 	shared.PrintlnInfo(NAME, "Connected successfully")
 	shared.PrintlnInfo(NAME)
 
 	// fecha o socket no final
-	defer sockTCP.CloseConnection()
+	defer rMQ.CloseConnection()
 
 	var msgFromServer shared.Reply
 
@@ -37,10 +37,10 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		msgToServer := player1Move + " " + player2Move //shared.Request{player1Move, player2Move}
 
 		// send request to server
-		sockTCP.Write(msgToServer)
+		rMQ.Write(msgToServer)
 
 		// receive reply from server
-		message := sockTCP.Read()
+		message := rMQ.Read()
 		message = strings.TrimSuffix(message, "\n")
 		result, err := strconv.Atoi(message)
 		if err != nil {

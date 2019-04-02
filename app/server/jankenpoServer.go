@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	rpcServer "jankenpo/impl/RPC/server"
+	tcpServer "jankenpo/impl/rabbitMQ/server"
 	jsonServer "jankenpo/impl/socketJson/server"
-	tcpServer "jankenpo/impl/socketTCP/server"
 	udpServer "jankenpo/impl/socketUDP/server"
 	"jankenpo/shared"
 	"sync"

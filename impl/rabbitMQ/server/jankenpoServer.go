@@ -2,27 +2,27 @@ package server
 
 import (
 	"fmt"
-	"jankenpo/impl/socketTCP"
+	"jankenpo/impl/rabbitMQ"
 	"jankenpo/shared"
 	"os"
 	"strconv"
 	"sync"
 )
 
-const NAME = "jankenpo/socketTCP/server"
+const NAME = "jankenpo/rabbitMQ/server"
 
-func waitForConection(sockTCP socketTCP.SocketTCP, idx int) {
+func waitForConection(rMQ rabbitMQ.RabbitMQ, idx int) {
 	shared.PrintlnInfo(NAME, "Connection", strconv.Itoa(idx), "started")
 
 	// aceita conexões na porta
-	client := sockTCP.WaitForConnection(idx)
+	client := rMQ.WaitForConnection(idx)
 
-	// fecha o socket
+	// fecha a conexão
 	defer client.CloseConnection()
 
 	var msgFromClient shared.Request
 
-	shared.PrintlnInfo(NAME, "Servidor pronto para receber solicitações (TCP)")
+	shared.PrintlnInfo(NAME, "Servidor pronto para receber solicitações (rabbitMQ)")
 	for i := 0; i < shared.SAMPLE_SIZE; i++ {
 
 		// recebe solicitações do cliente
@@ -41,27 +41,27 @@ func waitForConection(sockTCP socketTCP.SocketTCP, idx int) {
 		// envia resposta ao cliente
 		client.Write(strconv.Itoa(r))
 	}
-	shared.PrintlnInfo(NAME, "Servidor finalizado (TCP)")
+	shared.PrintlnInfo(NAME, "Servidor finalizado (rabbitMQ)")
 	shared.PrintlnInfo(NAME, "Connection", strconv.Itoa(idx), "ended")
 }
 
 func StartJankenpoServer() {
 	var wg sync.WaitGroup
-	shared.PrintlnInfo(NAME, "Initializing server TCP")
+	shared.PrintlnInfo(NAME, "Initializing server rabbitMQ")
 
-	// escuta na porta tcp configurada
-	var sockTCP socketTCP.SocketTCP
-	sockTCP.StartServer("", strconv.Itoa(shared.TCP_PORT), false, shared.CONECTIONS)
-	defer sockTCP.StopServer()
+	// escuta na porta rabbitMQ configurada
+	var rMQ rabbitMQ.RabbitMQ
+	rMQ.StartServer("", strconv.Itoa(shared.TCP_PORT), false, shared.CONECTIONS)
+	defer rMQ.StopServer()
 
 	for idx := 0; idx < shared.CONECTIONS; idx++ {
 		wg.Add(1)
 		go func(i int) {
-			waitForConection(sockTCP, i)
+			waitForConection(rMQ, i)
 
 			wg.Done()
 		}(idx)
 	}
 	wg.Wait()
-	shared.PrintlnInfo(NAME, "Fim do Servidor TCP")
+	shared.PrintlnInfo(NAME, "Fim do Servidor rabbitMQ")
 }
