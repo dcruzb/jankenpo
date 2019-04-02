@@ -6,15 +6,16 @@ import (
 	jsonServer "jankenpo/impl/socketJson/server"
 	tcpServer "jankenpo/impl/socketTCP/server"
 	udpServer "jankenpo/impl/socketUDP/server"
+	"jankenpo/shared"
 	"sync"
 )
 
 func main() {
-	tcp := flag.Bool("tcp", true, "Identifies if TCP server should start")
-	udp := flag.Bool("udp", false, "Identifies if UDP server should start")
-	json := flag.Bool("json", false, "Identifies if Json over TCP server should start")
-	rpc := flag.Bool("rpc", true, "Identifies if RPC server should start")
-	rmq := flag.Bool("rmq", false, "Identifies if RabbitMQ server should start")
+	tcp := flag.Bool("tcp", shared.SOCKET_TCP, "Identifies if TCP server should start")
+	udp := flag.Bool("udp", shared.SOCKET_UDP, "Identifies if UDP server should start")
+	json := flag.Bool("json", shared.JSON, "Identifies if Json over TCP server should start")
+	rpc := flag.Bool("rpc", shared.RPC, "Identifies if RPC server should start")
+	rmq := flag.Bool("rmq", shared.RABBIT_MQ, "Identifies if RabbitMQ server should start")
 	flag.Parse()
 
 	var wg sync.WaitGroup

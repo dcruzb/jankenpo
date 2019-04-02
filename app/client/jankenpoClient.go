@@ -13,11 +13,11 @@ import (
 )
 
 func main() {
-	tcp := flag.Bool("tcp", true, "Identifies if TCP client should start")
-	udp := flag.Bool("udp", false, "Identifies if UDP client should start")
-	json := flag.Bool("json", false, "Identifies if Json over TCP client should start")
-	rpc := flag.Bool("rpc", true, "Identifies if RPC client should start")
-	rmq := flag.Bool("rmq", false, "Identifies if RabbitMQ client should start")
+	tcp := flag.Bool("tcp", shared.SOCKET_TCP, "Identifies if TCP client should start")
+	udp := flag.Bool("udp", shared.SOCKET_UDP, "Identifies if UDP client should start")
+	json := flag.Bool("json", shared.JSON, "Identifies if Json over TCP client should start")
+	rpc := flag.Bool("rpc", shared.RPC, "Identifies if RPC client should start")
+	rmq := flag.Bool("rmq", shared.RABBIT_MQ, "Identifies if RabbitMQ client should start")
 	auto := flag.Bool("auto", shared.AUTO, "Identifies if the program should play in 'Auto' mode")
 	flag.Parse()
 

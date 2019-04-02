@@ -13,7 +13,7 @@ import (
 const NAME = "jankenpo/shared"
 
 // Config
-const CONECTIONS = 5
+const CONECTIONS = 1
 const TCP_PORT = 46000
 const UDP_PORT = 47000
 const JSON_PORT = 48000
@@ -22,8 +22,13 @@ const RPC_PORT = 49000
 // Debug
 const AUTO = true
 const SAMPLE_SIZE = 10000
+const SOCKET_TCP = true
+const SOCKET_UDP = true
+const JSON = true
+const RPC = true
+const RABBIT_MQ = true
 
-var SHOW_MESSAGES = []DebugLevel{ERROR} //, INFO, MESSAGE}
+var SHOW_MESSAGES = []DebugLevel{} //ERROR, INFO, MESSAGE}
 
 type DebugLevel int
 
