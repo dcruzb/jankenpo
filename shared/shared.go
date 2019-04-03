@@ -27,8 +27,8 @@ const SAMPLE_SIZE = 10000
 const SOCKET_TCP = false
 const SOCKET_UDP = false
 const JSON = false
-const RPC = false
-const RABBIT_MQ = true
+const RPC = true
+const RABBIT_MQ = false
 
 var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
 

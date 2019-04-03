@@ -20,6 +20,7 @@ type RabbitMQ struct {
 	listener           net.Listener
 	serverConnection   *amqp.Connection
 	channel            *amqp.Channel
+	messages           <-chan amqp.Delivery
 	initialConnections int
 	clients            []Client
 
@@ -79,12 +80,12 @@ func (rMQ *RabbitMQ) WaitForConnection(cliIdx int) (cl *Client) { // TODO if cli
 }
 
 func (rMQ *RabbitMQ) CloseConnection() {
+	rMQ.channel.Close()
+
 	err := rMQ.serverConnection.Close()
 	if err != nil {
 		shared.PrintlnError(NAME, err)
 	}
-
-	rMQ.channel.Close()
 }
 
 func (cl *Client) CloseConnection() {
@@ -133,18 +134,22 @@ func (rMQ *RabbitMQ) ReadChannel(queueName string) (messages <-chan amqp.Deliver
 }
 
 func (rMQ *RabbitMQ) ReadOne(queueName string) (message string) {
-	msgs, err := rMQ.channel.Consume(
-		queueName, // queue
-		"",        // consumer
-		true,      // auto-ack
-		false,     // exclusive
-		false,     // no-local
-		false,     // no-wait
-		nil,       // args
-	)
-	shared.FailOnError(NAME, err, "Failed to register a consumer")
+	if rMQ.messages == nil {
+		msgs, err := rMQ.channel.Consume(
+			queueName, // queue
+			"",        // consumer
+			true,      // auto-ack
+			false,     // exclusive
+			false,     // no-local
+			false,     // no-wait
+			nil,       // args
+		)
+		shared.FailOnError(NAME, err, "Failed to register a consumer")
 
-	d := <-msgs
+		rMQ.messages = msgs
+	}
+
+	d := <-rMQ.messages
 	message = string(d.Body)
 	//log.Printf("Received a message: %s", message)
 	return message

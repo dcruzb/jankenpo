@@ -12,11 +12,11 @@ const NAME = "jankenpo/rpc/server"
 func waitForConection(rpc rpc.RPC, idx int) {
 	shared.PrintlnInfo(NAME, "Connection", strconv.Itoa(idx), "started")
 
-	// aceita conexões na porta
-	rpc.WaitForConnection(idx)
-
 	// fecha o socket
 	defer rpc.CloseConnection()
+
+	// aceita conexões na porta
+	rpc.WaitForConnection(idx)
 
 	shared.PrintlnInfo(NAME, "Servidor finalizado (RPC)")
 	shared.PrintlnInfo(NAME, "Connection", strconv.Itoa(idx), "ended")

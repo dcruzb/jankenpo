@@ -13,6 +13,8 @@ const NAME = "jankenpo/rabbitMQ/server"
 
 func waitForConection(rMQ rabbitMQ.RabbitMQ, idx int) {
 	shared.PrintlnInfo(NAME, "Connection", strconv.Itoa(idx), "started")
+	var wg sync.WaitGroup
+	wg.Add(1)
 
 	// aceita conexões na porta
 	//client := rMQ.WaitForConnection(idx)
@@ -26,24 +28,36 @@ func waitForConection(rMQ rabbitMQ.RabbitMQ, idx int) {
 	var msgFromClient shared.Request
 
 	shared.PrintlnInfo(NAME, "Servidor pronto para receber solicitações (rabbitMQ)")
-	for i := 0; i < shared.SAMPLE_SIZE; i++ {
 
-		// recebe solicitações do cliente
-		message := rMQ.ReadOne("moves")
+	messages := rMQ.ReadChannel("moves")
+	go func() {
+		i := 0
+		for d := range messages {
+			message := string(d.Body)
 
-		shared.PrintlnInfo(NAME, "Message received: ", message)
-		_, err := fmt.Sscanf(message, "%s %s", &msgFromClient.Player1, &msgFromClient.Player2)
-		if err != nil {
-			shared.PrintlnError(NAME, err)
-			os.Exit(1)
+			shared.PrintlnInfo(NAME, "Message received: ", message)
+			_, err := fmt.Sscanf(message, "%s %s", &msgFromClient.Player1, &msgFromClient.Player2)
+			if err != nil {
+				shared.PrintlnError(NAME, err)
+				os.Exit(1)
+			}
+
+			// processa a solicitação
+			r := shared.ProcessaSolicitacao(msgFromClient)
+
+			// envia resposta ao cliente
+			rMQ.Write("result", strconv.Itoa(r))
+
+			i++
+			if i >= shared.SAMPLE_SIZE {
+				fmt.Println("finalizado sample size")
+				break
+			}
 		}
+		wg.Done()
+	}()
 
-		// processa a solicitação
-		r := shared.ProcessaSolicitacao(msgFromClient)
-
-		// envia resposta ao cliente
-		rMQ.Write("result", strconv.Itoa(r))
-	}
+	wg.Wait()
 	shared.PrintlnInfo(NAME, "Servidor finalizado (rabbitMQ)")
 	shared.PrintlnInfo(NAME, "Connection", strconv.Itoa(idx), "ended")
 }
