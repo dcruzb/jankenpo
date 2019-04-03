@@ -16,7 +16,7 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	var rMQ rabbitMQ.RabbitMQ
 
 	// connect to server
-	rMQ.ConnectToServer("localhost", strconv.Itoa(shared.TCP_PORT))
+	rMQ.ConnectToServer("localhost", strconv.Itoa(shared.RABBITMQ_PORT))
 
 	shared.PrintlnInfo(NAME, "Connected successfully")
 	shared.PrintlnInfo(NAME)
@@ -25,6 +25,9 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	defer rMQ.CloseConnection()
 
 	var msgFromServer shared.Reply
+
+	rMQ.CreateQueue("moves")
+	rMQ.CreateQueue("result")
 
 	// loop
 	start := time.Now()
@@ -37,10 +40,10 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		msgToServer := player1Move + " " + player2Move //shared.Request{player1Move, player2Move}
 
 		// send request to server
-		rMQ.Write(msgToServer)
+		rMQ.Write("moves", msgToServer)
 
 		// receive reply from server
-		message := rMQ.Read()
+		message := rMQ.ReadOne("result")
 		message = strings.TrimSuffix(message, "\n")
 		result, err := strconv.Atoi(message)
 		if err != nil {

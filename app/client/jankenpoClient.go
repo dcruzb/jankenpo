@@ -4,8 +4,9 @@ import (
 	"flag"
 	"fmt"
 	rpcClient "jankenpo/impl/RPC/client"
-	tcpClient "jankenpo/impl/rabbitMQ/client"
+	rmqClient "jankenpo/impl/rabbitMQ/client"
 	jsonClient "jankenpo/impl/socketJson/client"
+	tcpClient "jankenpo/impl/socketTCP/client"
 	udpClient "jankenpo/impl/socketUDP/client"
 	"jankenpo/shared"
 	"sync"
@@ -63,7 +64,7 @@ func main() {
 	if *rmq {
 		wg.Add(1)
 		go func() {
-			elapsedRMQ = 0
+			elapsedRMQ = rmqClient.PlayJanKenPo(*auto)
 			wg.Done()
 		}()
 	}

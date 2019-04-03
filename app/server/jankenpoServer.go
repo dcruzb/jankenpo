@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	rpcServer "jankenpo/impl/RPC/server"
-	tcpServer "jankenpo/impl/rabbitMQ/server"
+	rmqServer "jankenpo/impl/rabbitMQ/server"
 	jsonServer "jankenpo/impl/socketJson/server"
+	tcpServer "jankenpo/impl/socketTCP/server"
 	udpServer "jankenpo/impl/socketUDP/server"
 	"jankenpo/shared"
 	"sync"
@@ -55,6 +56,7 @@ func main() {
 	if *rmq {
 		wg.Add(1)
 		go func() {
+			rmqServer.StartJankenpoServer()
 			wg.Done()
 		}()
 	}

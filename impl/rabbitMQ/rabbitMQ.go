@@ -1,11 +1,10 @@
 package rabbitMQ
 
 import (
-	"bufio"
 	"encoding/json"
+	"github.com/streadway/amqp"
 	"jankenpo/shared"
 	"net"
-	"os"
 )
 
 const NAME = "jankenpo/rabbitMQ"
@@ -19,7 +18,8 @@ type RabbitMQ struct {
 	port               string
 	useJson            bool
 	listener           net.Listener
-	serverConnection   net.Conn
+	serverConnection   *amqp.Connection
+	channel            *amqp.Channel
 	initialConnections int
 	clients            []Client
 
@@ -47,12 +47,15 @@ func (rMQ *RabbitMQ) StopServer() {
 
 func (rMQ *RabbitMQ) ConnectToServer(ip, port string) {
 	// connect to server
-	conn, err := net.Dial("tcp", ip+":"+port)
-	if err != nil {
-		shared.PrintlnError(NAME, err)
-	}
+	conn, err := amqp.Dial("amqp://guest:guest@" + ip + ":" + port + "/")
+	shared.FailOnError(NAME, err, "Failed to connect to RabbitMQ")
 
 	rMQ.serverConnection = conn
+
+	ch, err := conn.Channel()
+	shared.FailOnError(NAME, err, "Failed to open a channel")
+
+	rMQ.channel = ch
 }
 
 func (rMQ *RabbitMQ) WaitForConnection(cliIdx int) (cl *Client) { // TODO if cliIdx >= inicitalConnections => need to append to the slice
@@ -80,6 +83,8 @@ func (rMQ *RabbitMQ) CloseConnection() {
 	if err != nil {
 		shared.PrintlnError(NAME, err)
 	}
+
+	rMQ.channel.Close()
 }
 
 func (cl *Client) CloseConnection() {
@@ -89,43 +94,77 @@ func (cl *Client) CloseConnection() {
 	}
 }
 
-func (rMQ *RabbitMQ) Read() (message string) {
-	if rMQ.useJson {
+func (rMQ *RabbitMQ) CreateQueue(name string) {
+	_, err := rMQ.channel.QueueDeclare(
+		name,  // name
+		false, // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+	shared.FailOnError(NAME, err, "Failed to declare a queue")
+}
 
-	} else {
-		var err error
-		// recebe solicitações do cliente
-		message, err = bufio.NewReader(rMQ.serverConnection).ReadString('\n')
-		if err != nil {
-			shared.PrintlnError(NAME, "Error while reading message from rabbitMQ. Details:", err)
-		}
-	}
+func (rMQ *RabbitMQ) ReadChannel(queueName string) (messages <-chan amqp.Delivery) {
+	messages, err := rMQ.channel.Consume(
+		queueName, // queue
+		"",        // consumer
+		true,      // auto-ack
+		false,     // exclusive
+		false,     // no-local
+		false,     // no-wait
+		nil,       // args
+	)
+	shared.FailOnError(NAME, err, "Failed to register a consumer")
 
+	//forever := make(chan bool)
+
+	//go func() {
+	/*	for d := range msgs {
+		log.Printf("Received a message: %s", d.Body)
+	}*/
+	//}()
+
+	//log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	//<-forever
+
+	return messages
+}
+
+func (rMQ *RabbitMQ) ReadOne(queueName string) (message string) {
+	msgs, err := rMQ.channel.Consume(
+		queueName, // queue
+		"",        // consumer
+		true,      // auto-ack
+		false,     // exclusive
+		false,     // no-local
+		false,     // no-wait
+		nil,       // args
+	)
+	shared.FailOnError(NAME, err, "Failed to register a consumer")
+
+	d := <-msgs
+	message = string(d.Body)
+	//log.Printf("Received a message: %s", message)
 	return message
 }
 
-func (rMQ *RabbitMQ) Write(message string) {
+func (rMQ *RabbitMQ) Write(queueName, message string) {
 	// envia resposta
-
-	// Vários tipos diferentes de se escrever utilizando Writer, todos funcionam
-	//_, err := fmt.Fprintf(conn, msgToServer+"\n")
-	//_, err := conn.Write([]byte( msgToServer + "\n"))
-	/*reader := bufio.NewWriter(conn)
-	_, err := reader.WriteString( msgToServer + "\n")
-	reader.Flush()*/
-	/*reader := bufio.NewWriter(conn)
-	_, err := io.WriteString(reader, msgToServer + "\n")
-	reader.Flush()*/
-	//_, err := io.WriteString(conn, msgToServer+"\n")
-
-	_, err := rMQ.serverConnection.Write([]byte(message + "\n"))
-	if err != nil {
-		shared.PrintlnError(NAME, "Error while writing message to rabbitMQ. Details:", err)
-		os.Exit(1)
-	}
+	err := rMQ.channel.Publish(
+		"",        // exchange
+		queueName, // routing key
+		false,     // mandatory
+		false,     // immediate
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(message),
+		})
+	shared.FailOnError(NAME, err, "Failed to publish a message")
 }
 
-func (cl *Client) Read() (message string) {
+/*func (cl *Client) Read() (message string) {
 	var err error
 	// recebe solicitações do cliente
 	message, err = bufio.NewReader(cl.connection).ReadString('\n')
@@ -145,14 +184,14 @@ func (cl *Client) Write(message string) {
 	/*reader := bufio.NewWriter(conn)
 	_, err := reader.WriteString( msgToServer + "\n")
 	reader.Flush()*/
-	/*reader := bufio.NewWriter(conn)
-	_, err := io.WriteString(reader, msgToServer + "\n")
-	reader.Flush()*/
-	//_, err := io.WriteString(conn, msgToServer+"\n")
+/*reader := bufio.NewWriter(conn)
+_, err := io.WriteString(reader, msgToServer + "\n")
+reader.Flush()*/
+//_, err := io.WriteString(conn, msgToServer+"\n")
 
-	_, err := cl.connection.Write([]byte(message + "\n"))
+/*	_, err := cl.connection.Write([]byte(message + "\n"))
 	if err != nil {
 		shared.PrintlnError(NAME, "Error while writing message to rabbitMQ. Details:", err)
 		os.Exit(1)
 	}
-}
+}*/

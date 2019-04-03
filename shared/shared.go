@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -18,17 +19,18 @@ const TCP_PORT = 46000
 const UDP_PORT = 47000
 const JSON_PORT = 48000
 const RPC_PORT = 49000
+const RABBITMQ_PORT = 5672
 
 // Debug
 const AUTO = true
 const SAMPLE_SIZE = 10000
-const SOCKET_TCP = true
-const SOCKET_UDP = true
-const JSON = true
-const RPC = true
+const SOCKET_TCP = false
+const SOCKET_UDP = false
+const JSON = false
+const RPC = false
 const RABBIT_MQ = true
 
-var SHOW_MESSAGES = []DebugLevel{} //ERROR, INFO, MESSAGE}
+var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
 
 type DebugLevel int
 
@@ -93,6 +95,14 @@ func PrintlnMessage(program string, message ...interface{}) {
 
 func PrintlnError(program string, message ...interface{}) {
 	Println(program, ERROR, message...)
+}
+
+func FailOnError(program string, err error, msg string) {
+	if err != nil {
+		//log.Fatalf("%s: %s", msg, err)
+		Println(program, ERROR, msg, ":", err)
+		os.Exit(1)
+	}
 }
 
 func inArray(a string, list []string) bool {
