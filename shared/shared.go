@@ -23,14 +23,15 @@ const RABBITMQ_PORT = 5672
 
 // Debug
 const AUTO = true
-const SAMPLE_SIZE = 10000
+const SAMPLE_SIZE = 1000
 const SOCKET_TCP = false
 const SOCKET_UDP = false
 const JSON = false
-const RPC = true
-const RABBIT_MQ = false
+const RPC = false
+const RABBIT_MQ = true
+const WAIT = 5 // tempo em ms
 
-var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
+var SHOW_MESSAGES = []DebugLevel{} //ERROR, INFO, MESSAGE}
 
 type DebugLevel int
 

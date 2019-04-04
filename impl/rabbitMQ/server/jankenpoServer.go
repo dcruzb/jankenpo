@@ -50,7 +50,7 @@ func waitForConection(rMQ rabbitMQ.RabbitMQ, idx int) {
 
 			i++
 			if i >= shared.SAMPLE_SIZE {
-				fmt.Println("finalizado sample size")
+				shared.PrintlnInfo(NAME, "Atingida quantidade de Sample Size, finalizando servidor!")
 				break
 			}
 		}

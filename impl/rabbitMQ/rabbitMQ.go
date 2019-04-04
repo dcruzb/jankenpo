@@ -80,9 +80,11 @@ func (rMQ *RabbitMQ) WaitForConnection(cliIdx int) (cl *Client) { // TODO if cli
 }
 
 func (rMQ *RabbitMQ) CloseConnection() {
-	rMQ.channel.Close()
-
-	err := rMQ.serverConnection.Close()
+	err := rMQ.channel.Close()
+	if err != nil {
+		shared.PrintlnError(NAME, err)
+	}
+	err = rMQ.serverConnection.Close()
 	if err != nil {
 		shared.PrintlnError(NAME, err)
 	}
@@ -168,35 +170,3 @@ func (rMQ *RabbitMQ) Write(queueName, message string) {
 		})
 	shared.FailOnError(NAME, err, "Failed to publish a message")
 }
-
-/*func (cl *Client) Read() (message string) {
-	var err error
-	// recebe solicitações do cliente
-	message, err = bufio.NewReader(cl.connection).ReadString('\n')
-	if err != nil {
-		shared.PrintlnError(NAME, "Error while reading message from rabbitMQ. Details:", err)
-	}
-
-	return message
-}
-
-func (cl *Client) Write(message string) {
-	// envia resposta
-
-	// Vários tipos diferentes de se escrever utilizando Writer, todos funcionam
-	//_, err := fmt.Fprintf(conn, msgToServer+"\n")
-	//_, err := conn.Write([]byte( msgToServer + "\n"))
-	/*reader := bufio.NewWriter(conn)
-	_, err := reader.WriteString( msgToServer + "\n")
-	reader.Flush()*/
-/*reader := bufio.NewWriter(conn)
-_, err := io.WriteString(reader, msgToServer + "\n")
-reader.Flush()*/
-//_, err := io.WriteString(conn, msgToServer+"\n")
-
-/*	_, err := cl.connection.Write([]byte(message + "\n"))
-	if err != nil {
-		shared.PrintlnError(NAME, "Error while writing message to rabbitMQ. Details:", err)
-		os.Exit(1)
-	}
-}*/

@@ -67,6 +67,7 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		}
 		shared.PrintlnMessage(NAME, "------------------------------------------------------------------")
 		shared.PrintlnMessage(NAME)
+		time.Sleep(shared.WAIT * time.Millisecond)
 	}
 	elapsed = time.Since(start)
 	return elapsed

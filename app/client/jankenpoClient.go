@@ -71,9 +71,11 @@ func main() {
 
 	wg.Wait()
 
+	fmt.Println("Calls:", shared.SAMPLE_SIZE)
+	fmt.Println("Wait:", shared.WAIT, "ms")
 	fmt.Println("Tempo UDP:", elapsedUDP)
 	fmt.Println("Tempo TCP:", elapsedTCP)
-	fmt.Println("Tempo Json:", elapsedJson)
+	//fmt.Println("Tempo Json:", elapsedJson)
 	fmt.Println("Tempo RPC:", elapsedRPC)
 	fmt.Println("Tempo RabbitMQ:", elapsedRMQ)
 }
