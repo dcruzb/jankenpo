@@ -24,14 +24,14 @@ const RABBITMQ_PORT = 5672
 // Debug
 const AUTO = true
 const SAMPLE_SIZE = 1000
-const SOCKET_TCP = false
-const SOCKET_UDP = false
-const JSON = false
-const RPC = false
+const SOCKET_TCP = true
+const SOCKET_UDP = true
+const JSON = true
+const RPC = true
 const RABBIT_MQ = true
 const WAIT = 5 // tempo em ms
 
-var SHOW_MESSAGES = []DebugLevel{} //ERROR, INFO, MESSAGE}
+var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
 
 type DebugLevel int
 
@@ -100,7 +100,6 @@ func PrintlnError(program string, message ...interface{}) {
 
 func FailOnError(program string, err error, msg string) {
 	if err != nil {
-		//log.Fatalf("%s: %s", msg, err)
 		Println(program, ERROR, msg, ":", err)
 		os.Exit(1)
 	}

@@ -16,12 +16,6 @@ func waitForConection(rMQ rabbitMQ.RabbitMQ, idx int) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	// aceita conexões na porta
-	//client := rMQ.WaitForConnection(idx)
-
-	// fecha a conexão
-	//defer client.CloseConnection()
-
 	rMQ.CreateQueue("moves")
 	rMQ.CreateQueue("result")
 
@@ -68,7 +62,6 @@ func StartJankenpoServer() {
 
 	// escuta na porta rabbitMQ configurada
 	var rMQ rabbitMQ.RabbitMQ
-	//rMQ.StartServer("", strconv.Itoa(shared.TCP_PORT), false, shared.CONECTIONS)
 	rMQ.ConnectToServer("localhost", strconv.Itoa(shared.RABBITMQ_PORT))
 	defer rMQ.CloseConnection()
 

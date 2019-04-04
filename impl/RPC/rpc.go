@@ -42,6 +42,13 @@ func (this *RPC) StopServer() {
 	}
 }
 
+func (this *RPC) WaitForConnection(cliIdx int) {
+	err := http.Serve(this.listener, nil)
+	if err != nil {
+		shared.PrintlnError(NAME, "Error while starting RPC server. Details: ", err)
+	}
+}
+
 func (this *RPC) ConnectToServer(ip, port string) {
 	// connect to server
 	rpcClient, err := rpc.DialHTTP("tcp", ip+":"+port)
@@ -50,13 +57,6 @@ func (this *RPC) ConnectToServer(ip, port string) {
 	}
 
 	this.rpcClient = *rpcClient
-}
-
-func (this *RPC) WaitForConnection(cliIdx int) /*(cl *Client)*/ { // TODO if cliIdx >= inicitalConnections => need to append to the slice
-	err := http.Serve(this.listener, nil)
-	if err != nil {
-		shared.PrintlnError(NAME, "Error while starting RPC server. Details: ", err)
-	}
 }
 
 func (this *RPC) CloseConnection() {

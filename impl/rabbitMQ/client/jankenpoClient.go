@@ -37,7 +37,7 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		player1Move, player2Move = shared.GetMoves(auto)
 
 		// prepare request
-		msgToServer := player1Move + " " + player2Move //shared.Request{player1Move, player2Move}
+		msgToServer := player1Move + " " + player2Move
 
 		// send request to server
 		rMQ.Write("moves", msgToServer)

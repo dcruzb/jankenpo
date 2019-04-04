@@ -33,7 +33,7 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		player1Move, player2Move = shared.GetMoves(auto)
 
 		// prepare request
-		msgToServer = shared.Request{player1Move, player2Move} //player1Move + " " + player2Move //
+		msgToServer = shared.Request{player1Move, player2Move}
 
 		// send request to server and receive reply at the same time
 		msgFromServer = rpc.Call("Request.Play", msgToServer)
