@@ -20,15 +20,17 @@ const UDP_PORT = 47000
 const JSON_PORT = 48000
 const RPC_PORT = 49000
 const RABBITMQ_PORT = 5672
+const MID_PORT = 1234
 
 // Debug
 const AUTO = true
-const SAMPLE_SIZE = 1000
+const SAMPLE_SIZE = 10000
 const SOCKET_TCP = true
-const SOCKET_UDP = true
-const JSON = true
+const SOCKET_UDP = false
+const JSON = false
 const RPC = true
-const RABBIT_MQ = true
+const RABBIT_MQ = false
+const MID = true
 const WAIT = 5 // tempo em ms
 
 var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
