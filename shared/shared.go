@@ -14,17 +14,19 @@ import (
 const NAME = "jankenpo/shared"
 
 // Config
-const CONECTIONS = 1
+const NAME_SERVER_IP = "127.0.0.1"
+const NAME_SERVER_PORT = 45000
 const TCP_PORT = 46000
 const UDP_PORT = 47000
 const JSON_PORT = 48000
 const RPC_PORT = 49000
 const RABBITMQ_PORT = 5672
-const MID_PORT = 1234
+const MID_PORT = 50000
+const CONECTIONS = 1
 
 // Debug
 const AUTO = true
-const SAMPLE_SIZE = 10000
+const SAMPLE_SIZE = 20
 const SOCKET_TCP = true
 const SOCKET_UDP = false
 const JSON = false
