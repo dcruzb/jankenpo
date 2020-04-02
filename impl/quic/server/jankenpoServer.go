@@ -2,29 +2,28 @@ package server
 
 import (
 	"fmt"
-	"github.com/dcbCIn/jankenpo/impl/socketTCP"
+	"github.com/dcbCIn/jankenpo/impl/quic"
 	"github.com/dcbCIn/jankenpo/shared"
 	"os"
 	"strconv"
 	"sync"
 )
 
-const NAME = "jankenpo/socketTCP/server"
+const NAME = "jankenpo/quic/server"
 
-func waitForConection(sockTCP socketTCP.SocketTCP, idx int) {
+func waitForConection(quic quic.Quic, idx int) {
 	shared.PrintlnInfo(NAME, "Connection", strconv.Itoa(idx), "started")
 
 	// aceita conexões na porta
-	client := sockTCP.WaitForConnection(idx)
+	client := quic.WaitForConnection(idx)
 
 	// fecha o socket
-	defer client.CloseConnection()
+	//defer client.CloseConnection()
 
 	var msgFromClient shared.Request
 
-	shared.PrintlnInfo(NAME, "Servidor pronto para receber solicitações (TCP)")
-	for i := 0; i < shared.SAMPLE_SIZE; i++ {
-
+	shared.PrintlnInfo(NAME, "Servidor pronto para receber solicitações (Quic)")
+	for i := 0; i <= shared.SAMPLE_SIZE; i++ {
 		// recebe solicitações do cliente
 		message := client.Read()
 
@@ -39,29 +38,29 @@ func waitForConection(sockTCP socketTCP.SocketTCP, idx int) {
 		r := shared.ProcessaSolicitacao(msgFromClient)
 
 		// envia resposta ao cliente
-		client.Write(strconv.Itoa(r))
+		client.Write(strconv.Itoa(r) + "\n")
 	}
-	shared.PrintlnInfo(NAME, "Servidor finalizado (TCP)")
+	shared.PrintlnInfo(NAME, "Servidor finalizado (Quic)")
 	shared.PrintlnInfo(NAME, "Connection", strconv.Itoa(idx), "ended")
 }
 
 func StartJankenpoServer() {
 	var wg sync.WaitGroup
-	shared.PrintlnInfo(NAME, "Initializing server TCP")
+	shared.PrintlnInfo(NAME, "Initializing server Quic")
 
-	// escuta na porta tcp configurada
-	var sockTCP socketTCP.SocketTCP
-	sockTCP.StartServer("", strconv.Itoa(shared.TCP_PORT), false, shared.CONECTIONS)
-	defer sockTCP.StopServer()
+	// escuta na porta quic configurada
+	var quic quic.Quic
+	quic.StartServer("", strconv.Itoa(shared.QUIC_PORT), false, shared.CONECTIONS)
+	defer quic.StopServer()
 
 	for idx := 0; idx < shared.CONECTIONS; idx++ {
 		wg.Add(1)
 		go func(i int) {
-			waitForConection(sockTCP, i)
+			waitForConection(quic, i)
 
 			wg.Done()
 		}(idx)
 	}
 	wg.Wait()
-	shared.PrintlnInfo(NAME, "Fim do Servidor TCP")
+	shared.PrintlnInfo(NAME, "Fim do Servidor Quic")
 }

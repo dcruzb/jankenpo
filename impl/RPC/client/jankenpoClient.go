@@ -1,8 +1,8 @@
 package client
 
 import (
-	"jankenpo/impl/RPC"
-	"jankenpo/shared"
+	"github.com/dcbCIn/jankenpo/impl/RPC"
+	"github.com/dcbCIn/jankenpo/shared"
 	"strconv"
 	"time"
 )
@@ -26,7 +26,6 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	var msgToServer shared.Request
 
 	// loop
-	start := time.Now()
 	for i := 0; i < shared.SAMPLE_SIZE; i++ {
 		shared.PrintlnMessage(NAME, "Game", i)
 
@@ -36,7 +35,9 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		msgToServer = shared.Request{player1Move, player2Move}
 
 		// send request to server and receive reply at the same time
+		start := time.Now()
 		msgFromServer = rpc.Call("Request.Play", msgToServer)
+		elapsed += time.Since(start)
 
 		shared.PrintlnMessage(NAME)
 		switch (*msgFromServer).Result {
@@ -51,6 +52,5 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		shared.PrintlnMessage(NAME)
 		time.Sleep(shared.WAIT * time.Millisecond)
 	}
-	elapsed = time.Since(start)
 	return elapsed
 }

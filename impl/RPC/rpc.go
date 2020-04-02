@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	"jankenpo/shared"
+	"github.com/dcbCIn/jankenpo/shared"
 	"log"
 	"net"
 	"net/http"

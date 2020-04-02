@@ -1,8 +1,8 @@
 package client
 
 import (
-	"jankenpo/impl/rabbitMQ"
-	"jankenpo/shared"
+	"github.com/dcbCIn/jankenpo/impl/rabbitMQ"
+	"github.com/dcbCIn/jankenpo/shared"
 	"os"
 	"strconv"
 	"strings"

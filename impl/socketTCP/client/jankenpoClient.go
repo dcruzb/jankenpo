@@ -1,8 +1,8 @@
 package client
 
 import (
-	"jankenpo/impl/socketTCP"
-	"jankenpo/shared"
+	"github.com/dcbCIn/jankenpo/impl/socketTCP"
+	"github.com/dcbCIn/jankenpo/shared"
 	"os"
 	"strconv"
 	"strings"
@@ -27,7 +27,6 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	var msgFromServer shared.Reply
 
 	// loop
-	start := time.Now()
 	for i := 0; i < shared.SAMPLE_SIZE; i++ {
 		shared.PrintlnMessage(NAME, "Game", i)
 
@@ -37,10 +36,12 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		msgToServer := player1Move + " " + player2Move //shared.Request{player1Move, player2Move}
 
 		// send request to server
+		start := time.Now()
 		sockTCP.Write(msgToServer)
 
 		// receive reply from server
 		message := sockTCP.Read()
+		elapsed += time.Since(start)
 		message = strings.TrimSuffix(message, "\n")
 		result, err := strconv.Atoi(message)
 		if err != nil {
@@ -66,6 +67,5 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		shared.PrintlnMessage(NAME)
 		time.Sleep(shared.WAIT * time.Millisecond)
 	}
-	elapsed = time.Since(start)
 	return elapsed
 }

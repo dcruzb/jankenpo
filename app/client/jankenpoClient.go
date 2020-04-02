@@ -3,17 +3,19 @@ package main
 import (
 	"flag"
 	"fmt"
-	rpcClient "jankenpo/impl/RPC/client"
-	rmqClient "jankenpo/impl/rabbitMQ/client"
-	jsonClient "jankenpo/impl/socketJson/client"
-	tcpClient "jankenpo/impl/socketTCP/client"
-	udpClient "jankenpo/impl/socketUDP/client"
-	"jankenpo/shared"
+	rpcClient "github.com/dcbCIn/jankenpo/impl/RPC/client"
+	quicClient "github.com/dcbCIn/jankenpo/impl/quic/client"
+	rmqClient "github.com/dcbCIn/jankenpo/impl/rabbitMQ/client"
+	jsonClient "github.com/dcbCIn/jankenpo/impl/socketJson/client"
+	tcpClient "github.com/dcbCIn/jankenpo/impl/socketTCP/client"
+	udpClient "github.com/dcbCIn/jankenpo/impl/socketUDP/client"
+	"github.com/dcbCIn/jankenpo/shared"
 	"sync"
 	"time"
 )
 
 func main() {
+	quic := flag.Bool("quic", shared.QUIC, "Identifies if TCP client should start")
 	tcp := flag.Bool("tcp", shared.SOCKET_TCP, "Identifies if TCP client should start")
 	udp := flag.Bool("udp", shared.SOCKET_UDP, "Identifies if UDP client should start")
 	json := flag.Bool("json", shared.JSON, "Identifies if Json over TCP client should start")
@@ -23,11 +25,20 @@ func main() {
 	flag.Parse()
 
 	var wg sync.WaitGroup
+	var elapsedQuic time.Duration
 	var elapsedTCP time.Duration
 	var elapsedUDP time.Duration
 	var elapsedJson time.Duration
 	var elapsedRPC time.Duration
 	var elapsedRMQ time.Duration
+
+	if *quic {
+		wg.Add(1)
+		go func() {
+			elapsedQuic = quicClient.PlayJanKenPo(*auto)
+			wg.Done()
+		}()
+	}
 
 	if *tcp {
 		wg.Add(1)
@@ -75,6 +86,7 @@ func main() {
 	fmt.Println("Wait:", shared.WAIT, "ms")
 	fmt.Println("Tempo UDP:", elapsedUDP)
 	fmt.Println("Tempo TCP:", elapsedTCP)
+	fmt.Println("Tempo Quic:", elapsedQuic)
 	fmt.Println("Tempo Json:", elapsedJson)
 	fmt.Println("Tempo RPC:", elapsedRPC)
 	fmt.Println("Tempo RabbitMQ:", elapsedRMQ)

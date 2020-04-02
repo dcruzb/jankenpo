@@ -2,16 +2,18 @@ package main
 
 import (
 	"flag"
-	rpcServer "jankenpo/impl/RPC/server"
-	rmqServer "jankenpo/impl/rabbitMQ/server"
-	jsonServer "jankenpo/impl/socketJson/server"
-	tcpServer "jankenpo/impl/socketTCP/server"
-	udpServer "jankenpo/impl/socketUDP/server"
-	"jankenpo/shared"
+	rpcServer "github.com/dcbCIn/jankenpo/impl/RPC/server"
+	quicServer "github.com/dcbCIn/jankenpo/impl/quic/server"
+	rmqServer "github.com/dcbCIn/jankenpo/impl/rabbitMQ/server"
+	jsonServer "github.com/dcbCIn/jankenpo/impl/socketJson/server"
+	tcpServer "github.com/dcbCIn/jankenpo/impl/socketTCP/server"
+	udpServer "github.com/dcbCIn/jankenpo/impl/socketUDP/server"
+	"github.com/dcbCIn/jankenpo/shared"
 	"sync"
 )
 
 func main() {
+	quic := flag.Bool("quic", shared.QUIC, "Identifies if Quic server should start")
 	tcp := flag.Bool("tcp", shared.SOCKET_TCP, "Identifies if TCP server should start")
 	udp := flag.Bool("udp", shared.SOCKET_UDP, "Identifies if UDP server should start")
 	json := flag.Bool("json", shared.JSON, "Identifies if Json over TCP server should start")
@@ -20,6 +22,14 @@ func main() {
 	flag.Parse()
 
 	var wg sync.WaitGroup
+
+	if *quic {
+		wg.Add(1)
+		go func() {
+			quicServer.StartJankenpoServer()
+			wg.Done()
+		}()
+	}
 
 	if *tcp {
 		wg.Add(1)

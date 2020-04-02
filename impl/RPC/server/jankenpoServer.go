@@ -1,8 +1,8 @@
 package server
 
 import (
-	"jankenpo/impl/RPC"
-	"jankenpo/shared"
+	"github.com/dcbCIn/jankenpo/impl/RPC"
+	"github.com/dcbCIn/jankenpo/shared"
 	"strconv"
 	"sync"
 )

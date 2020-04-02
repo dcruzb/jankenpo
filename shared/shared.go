@@ -1,8 +1,14 @@
 package shared
 
 import (
+	crand "crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"log"
+	"math/big"
 	"math/rand"
 	"os"
 	"runtime"
@@ -16,6 +22,7 @@ const NAME = "jankenpo/shared"
 // Config
 const NAME_SERVER_IP = "127.0.0.1"
 const NAME_SERVER_PORT = 45000
+const QUIC_PORT = 51000
 const TCP_PORT = 46000
 const UDP_PORT = 47000
 const JSON_PORT = 48000
@@ -26,16 +33,17 @@ const CONECTIONS = 1
 
 // Debug
 const AUTO = true
-const SAMPLE_SIZE = 20
+const SAMPLE_SIZE = 10000
+const QUIC = true
 const SOCKET_TCP = true
 const SOCKET_UDP = false
 const JSON = false
-const RPC = true
+const RPC = false
 const RABBIT_MQ = false
-const MID = true
+const MID = false
 const WAIT = 5 // tempo em ms
 
-var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
+var SHOW_MESSAGES = []DebugLevel{ERROR} //, INFO, MESSAGE}
 
 type DebugLevel int
 
@@ -207,4 +215,28 @@ func GetMoves(auto bool) (player1Move string, player2Move string) {
 	PrintlnMessage(NAME, "Jogadas => Player 1:", player1Move, "Player 2:", player2Move)
 
 	return player1Move, player2Move
+}
+
+// Setup a bare-bones TLS config for the server
+func GenerateTLSConfig() *tls.Config {
+	key, err := rsa.GenerateKey(crand.Reader, 1024)
+	if err != nil {
+		panic(err)
+	}
+	template := x509.Certificate{SerialNumber: big.NewInt(1)}
+	certDER, err := x509.CreateCertificate(crand.Reader, &template, &template, &key.PublicKey, key)
+	if err != nil {
+		panic(err)
+	}
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
+
+	tlsCert, err := tls.X509KeyPair(certPEM, keyPEM)
+	if err != nil {
+		panic(err)
+	}
+	return &tls.Config{
+		Certificates: []tls.Certificate{tlsCert},
+		NextProtos:   []string{"exemplo"},
+	}
 }

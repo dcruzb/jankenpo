@@ -3,7 +3,7 @@ package socketTCP
 import (
 	"bufio"
 	"encoding/json"
-	"jankenpo/shared"
+	"github.com/dcbCIn/jankenpo/shared"
 	"net"
 	"os"
 )

@@ -2,7 +2,7 @@ package rabbitMQ
 
 import (
 	"github.com/streadway/amqp"
-	"jankenpo/shared"
+	"github.com/dcbCIn/jankenpo/shared"
 )
 
 const NAME = "jankenpo/rabbitMQ"

@@ -2,7 +2,7 @@ package server
 
 import (
 	"encoding/json"
-	"jankenpo/shared"
+	"github.com/dcbCIn/jankenpo/shared"
 	"net"
 	"os"
 	"strconv"

@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"jankenpo/shared"
+	"github.com/dcbCIn/jankenpo/shared"
 	"log"
 	"net"
 	"os"
