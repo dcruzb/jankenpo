@@ -24,6 +24,7 @@ const NAME_SERVER_IP = "127.0.0.1"
 const NAME_SERVER_PORT = 45000
 const QUIC_PORT = 51000
 const TCP_PORT = 46000
+const TCP_SSL_PORT = 52000
 const UDP_PORT = 47000
 const JSON_PORT = 48000
 const RPC_PORT = 49000
@@ -33,9 +34,10 @@ const CONECTIONS = 1
 
 // Debug
 const AUTO = true
-const SAMPLE_SIZE = 10000
-const QUIC = true
-const SOCKET_TCP = true
+const SAMPLE_SIZE = 100
+const QUIC = false
+const SOCKET_TCP = false
+const SOCKET_TCP_SSL = true
 const SOCKET_UDP = false
 const JSON = false
 const RPC = false
@@ -43,7 +45,7 @@ const RABBIT_MQ = false
 const MID = false
 const WAIT = 5 // tempo em ms
 
-var SHOW_MESSAGES = []DebugLevel{ERROR} //, INFO, MESSAGE}
+var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
 
 type DebugLevel int
 

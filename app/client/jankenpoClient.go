@@ -8,6 +8,7 @@ import (
 	rmqClient "github.com/dcbCIn/jankenpo/impl/rabbitMQ/client"
 	jsonClient "github.com/dcbCIn/jankenpo/impl/socketJson/client"
 	tcpClient "github.com/dcbCIn/jankenpo/impl/socketTCP/client"
+	tcpSslClient "github.com/dcbCIn/jankenpo/impl/socketTcpSsl/client"
 	udpClient "github.com/dcbCIn/jankenpo/impl/socketUDP/client"
 	"github.com/dcbCIn/jankenpo/shared"
 	"sync"
@@ -17,6 +18,7 @@ import (
 func main() {
 	quic := flag.Bool("quic", shared.QUIC, "Identifies if TCP client should start")
 	tcp := flag.Bool("tcp", shared.SOCKET_TCP, "Identifies if TCP client should start")
+	tcpSsl := flag.Bool("tcpSsl", shared.SOCKET_TCP_SSL, "Identifies if TCP/SSL client should start")
 	udp := flag.Bool("udp", shared.SOCKET_UDP, "Identifies if UDP client should start")
 	json := flag.Bool("json", shared.JSON, "Identifies if Json over TCP client should start")
 	rpc := flag.Bool("rpc", shared.RPC, "Identifies if RPC client should start")
@@ -27,6 +29,7 @@ func main() {
 	var wg sync.WaitGroup
 	var elapsedQuic time.Duration
 	var elapsedTCP time.Duration
+	var elapsedTcpSsl time.Duration
 	var elapsedUDP time.Duration
 	var elapsedJson time.Duration
 	var elapsedRPC time.Duration
@@ -44,6 +47,14 @@ func main() {
 		wg.Add(1)
 		go func() {
 			elapsedTCP = tcpClient.PlayJanKenPo(*auto)
+			wg.Done()
+		}()
+	}
+
+	if *tcpSsl {
+		wg.Add(1)
+		go func() {
+			elapsedTcpSsl = tcpSslClient.PlayJanKenPo(*auto)
 			wg.Done()
 		}()
 	}
@@ -86,6 +97,7 @@ func main() {
 	fmt.Println("Wait:", shared.WAIT, "ms")
 	fmt.Println("Tempo UDP:", elapsedUDP)
 	fmt.Println("Tempo TCP:", elapsedTCP)
+	fmt.Println("Tempo TCP/Ssl:", elapsedTcpSsl)
 	fmt.Println("Tempo Quic:", elapsedQuic)
 	fmt.Println("Tempo Json:", elapsedJson)
 	fmt.Println("Tempo RPC:", elapsedRPC)
