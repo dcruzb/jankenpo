@@ -93,13 +93,29 @@ func main() {
 
 	wg.Wait()
 
-	fmt.Println("Calls:", shared.SAMPLE_SIZE)
-	fmt.Println("Wait:", shared.WAIT, "ms")
-	fmt.Println("Tempo UDP:", elapsedUDP)
-	fmt.Println("Tempo TCP:", elapsedTCP)
-	fmt.Println("Tempo TCP/Ssl:", elapsedTcpSsl)
-	fmt.Println("Tempo Quic:", elapsedQuic)
-	fmt.Println("Tempo Json:", elapsedJson)
-	fmt.Println("Tempo RPC:", elapsedRPC)
-	fmt.Println("Tempo RabbitMQ:", elapsedRMQ)
+	fmt.Println("Type;Calls;Wait;TotalTime;MeanTime")
+	if *udp {
+		fmt.Println("UDP;", shared.SAMPLE_SIZE, ";", shared.WAIT, ";", elapsedUDP, ";", elapsedUDP/shared.SAMPLE_SIZE)
+	}
+	if *tcp {
+		fmt.Println("TCP;", shared.SAMPLE_SIZE, ";", shared.WAIT, ";", elapsedTCP, ";", elapsedTCP/shared.SAMPLE_SIZE)
+	}
+	if *tcpSsl {
+		fmt.Println("TCP/Ssl;",shared.SAMPLE_SIZE, ";", shared.WAIT, ";", elapsedTcpSsl, ";", elapsedTcpSsl / shared.SAMPLE_SIZE)
+	}
+	if *quic {
+		fmt.Println("Quic;", shared.SAMPLE_SIZE, ";", shared.WAIT, ";", elapsedQuic, ";", elapsedQuic / shared.SAMPLE_SIZE)
+	}
+
+	if *json {
+		fmt.Println("Json;", shared.SAMPLE_SIZE, ";", shared.WAIT, ";", elapsedJson, ";", elapsedJson / shared.SAMPLE_SIZE) )
+	}
+
+	if *rpc {
+		fmt.Println("RPC;", shared.SAMPLE_SIZE, ";", shared.WAIT, ";", elapsedRPC, ";", elapsedRPC / shared.SAMPLE_SIZE)
+	}
+
+	if *rmq {
+		fmt.Println("RabbitMQ;", shared.SAMPLE_SIZE, ";", shared.WAIT, ";", elapsedRMQ, ";", elapsedRMQ / shared.SAMPLE_SIZE)
+	}
 }
