@@ -41,7 +41,6 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	message := make([]byte, 4)
 
 	// loop
-	start := time.Now()
 	for i := 0; i < shared.SAMPLE_SIZE; i++ {
 		shared.PrintlnMessage(NAME, "Game", i)
 
@@ -51,6 +50,7 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		msgToServer := player1Move + " " + player2Move //shared.Request{player1Move, player2Move}
 
 		// send request to server
+		start := time.Now()
 		_, err := conn.Write([]byte(msgToServer + "\n"))
 		if err != nil {
 			shared.PrintlnError(NAME, err)
@@ -59,6 +59,7 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 
 		// receive reply from server
 		n, _, err := conn.ReadFromUDP(message)
+		elapsed += time.Since(start)
 		messageS := strings.TrimSuffix(string(message[:n]), "\n")
 		result, err := strconv.Atoi(messageS)
 		if err != nil {
@@ -84,6 +85,5 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		shared.PrintlnMessage(NAME)
 		time.Sleep(shared.WAIT * time.Millisecond)
 	}
-	elapsed = time.Since(start)
 	return elapsed
 }

@@ -3,7 +3,6 @@ package quic
 import (
 	"bufio"
 	"context"
-	"crypto/tls"
 	//"encoding/json"
 	"github.com/dcbCIn/jankenpo/shared"
 	"github.com/lucas-clemente/quic-go"
@@ -33,7 +32,7 @@ type Quic struct {
 func (st *Quic) StartServer(ip, port string, useJson bool, initialConnections int) {
 	//ln, err := net.Listen("tcp", ip+":"+port)
 	quicConfig := quic.Config{ KeepAlive:true}
-	ln, err := quic.ListenAddr(ip + ":" + port, shared.GenerateTLSConfig(), &quicConfig)
+	ln, err := quic.ListenAddr(ip + ":" + port, shared.GetServerTLSConfig(), &quicConfig)
 	if err != nil {
 		shared.PrintlnError(NAME, "Error while starting TCP server. Details: ", err)
 	}
@@ -53,11 +52,11 @@ func (st *Quic) StopServer() {
 func (st *Quic) ConnectToServer(ip, port string) {
 	// connect to server
 	//conn, err := net.Dial("tcp", ip+":"+port)
-	tlsConf := &tls.Config{
-		InsecureSkipVerify: true,
-		NextProtos:         []string{"exemplo"},
-	}
-	session, err := quic.DialAddr(ip+":"+port, tlsConf, nil)
+	//tlsConf := &tls.Config{
+	//	InsecureSkipVerify: true,
+	//	//NextProtos:         []string{"exemplo"},
+	//}
+	session, err := quic.DialAddr(ip+":"+port, shared.GetClientTLSConfig(), nil)
 	if err != nil {
 		shared.PrintlnError(NAME, err)
 	}
@@ -68,7 +67,7 @@ func (st *Quic) ConnectToServer(ip, port string) {
 		stream, err := st.serverSession.OpenStreamSync(context.Background())
 		st.stream = stream
 		if err != nil {
-			shared.PrintlnError(NAME, "Error while writing message to quic. Details:", err)
+			shared.PrintlnError(NAME, "Error while opening quic stream from session. Details:", err)
 			os.Exit(1)
 		}
 	}

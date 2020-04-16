@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"github.com/dcbCIn/jankenpo/impl/socketTCP"
 	"github.com/dcbCIn/jankenpo/shared"
 	"os"
@@ -14,6 +15,7 @@ const NAME = "jankenpo/socketTCP/client"
 func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	var player1Move, player2Move string
 	var sockTCP socketTCP.SocketTCP
+	filename := fmt.Sprintf("%s%s%s", "./socketTcp", time.Now(), ".csv")
 
 	// connect to server
 	sockTCP.ConnectToServer("localhost", strconv.Itoa(shared.TCP_PORT))
@@ -26,6 +28,7 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 
 	var msgFromServer shared.Reply
 
+	shared.WriteToFile(filename, "Type;SAMPLE_SIZE;WAIT;InvNumber;unitaryElapsed;unitaryElapsedNanoseconds\n")
 	// loop
 	for i := 0; i < shared.SAMPLE_SIZE; i++ {
 		shared.PrintlnMessage(NAME, "Game", i)
@@ -41,7 +44,10 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 
 		// receive reply from server
 		message := sockTCP.Read()
-		elapsed += time.Since(start)
+		unitaryElapsed := time.Since(start)
+		shared.WriteToFile(filename, fmt.Sprintf("%s%d%s%d%s%d%s%s%s%d\n","TCP;",shared.SAMPLE_SIZE, ";", shared.WAIT, ";", i, ";", unitaryElapsed, ";", unitaryElapsed.Nanoseconds()))
+		elapsed += unitaryElapsed
+
 		message = strings.TrimSuffix(message, "\n")
 		result, err := strconv.Atoi(message)
 		if err != nil {
@@ -67,5 +73,7 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		shared.PrintlnMessage(NAME)
 		time.Sleep(shared.WAIT * time.Millisecond)
 	}
+
+	shared.WriteToFile(filename, fmt.Sprintf("%s%d%s%d%s%d%s%s\n","TCP;",shared.SAMPLE_SIZE, ";", shared.WAIT, ";", elapsed, ";", elapsed / shared.SAMPLE_SIZE))
 	return elapsed
 }
