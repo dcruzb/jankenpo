@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"github.com/dcbCIn/jankenpo/impl/socketTcpSsl"
 	"github.com/dcbCIn/jankenpo/shared"
 	"os"
@@ -14,6 +15,7 @@ const NAME = "jankenpo/socketTcpSsl/client"
 func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 	var player1Move, player2Move string
 	var sockTcpSsl socketTcpSsl.SocketTcpSsl
+	filename := fmt.Sprintf("%s%s%s", "./socketTcpSsl", time.Now(), ".csv")
 
 	// connect to server
 	sockTcpSsl.ConnectToServer("localhost", strconv.Itoa(shared.TCP_SSL_PORT))
@@ -26,6 +28,7 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 
 	var msgFromServer shared.Reply
 
+	shared.WriteToFile(filename, "Type;SAMPLE_SIZE;WAIT;InvNumber;unitaryElapsed;unitaryElapsedNanoseconds\n")
 	// loop
 	for i := 0; i < shared.SAMPLE_SIZE; i++ {
 		shared.PrintlnMessage(NAME, "Game", i)
@@ -41,7 +44,10 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 
 		// receive reply from server
 		message := sockTcpSsl.Read()
-		elapsed += time.Since(start)
+		unitaryElapsed := time.Since(start)
+		shared.WriteToFile(filename, fmt.Sprintf("%s%d%s%d%s%d%s%s%s%d\n","TCP/Ssl;",shared.SAMPLE_SIZE, ";", shared.WAIT, ";", i, ";", unitaryElapsed, ";", unitaryElapsed.Nanoseconds()))
+		elapsed += unitaryElapsed
+
 		message = strings.TrimSuffix(message, "\n")
 		result, err := strconv.Atoi(message)
 		if err != nil {
@@ -67,5 +73,7 @@ func PlayJanKenPo(auto bool) (elapsed time.Duration) {
 		shared.PrintlnMessage(NAME)
 		time.Sleep(shared.WAIT * time.Millisecond)
 	}
+
+	shared.WriteToFile(filename, fmt.Sprintf("%s%d%s%d%s%d%s%s\n","TCP/Ssl;",shared.SAMPLE_SIZE, ";", shared.WAIT, ";", elapsed, ";", elapsed / shared.SAMPLE_SIZE))
 	return elapsed
 }

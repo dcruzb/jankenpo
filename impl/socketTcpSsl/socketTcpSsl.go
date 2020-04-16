@@ -29,7 +29,7 @@ type SocketTcpSsl struct {
 }
 
 func (st *SocketTcpSsl) StartServer(ip, port string, useJson bool, initialConnections int) {
-	ln, err := tls.Listen("tcp4", ip+":"+port, shared.GenerateTLSConfig())
+	ln, err := tls.Listen("tcp4", ip+":"+port, shared.GetServerTLSConfig())
 	if err != nil {
 		shared.PrintlnError(NAME, "Error while starting TcpSsl server. Details: ", err)
 	}
@@ -47,12 +47,7 @@ func (st *SocketTcpSsl) StopServer() {
 }
 
 func (st *SocketTcpSsl) ConnectToServer(ip, port string) {
-	// connect to server
-	tlsConf := &tls.Config{
-		InsecureSkipVerify: true,
-		NextProtos:         []string{"exemplo"},
-	}
-	conn, err := tls.Dial("tcp4", ip+":"+port, tlsConf)
+	conn, err := tls.Dial("tcp4", ip+":"+port, shared.GetClientTLSConfig())
 	if err != nil {
 		shared.PrintlnError(NAME, err)
 	}

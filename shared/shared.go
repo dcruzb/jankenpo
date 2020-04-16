@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/big"
 	"math/rand"
@@ -34,10 +35,10 @@ const CONECTIONS = 1
 
 // Debug
 const AUTO = true
-const SAMPLE_SIZE = 100
-const QUIC = false
+const SAMPLE_SIZE = 10000
+const QUIC = true
 const SOCKET_TCP = false
-const SOCKET_TCP_SSL = true
+const SOCKET_TCP_SSL = false
 const SOCKET_UDP = false
 const JSON = false
 const RPC = false
@@ -45,7 +46,7 @@ const RABBIT_MQ = false
 const MID = false
 const WAIT = 5 // tempo em ms
 
-var SHOW_MESSAGES = []DebugLevel{ERROR, INFO, MESSAGE}
+var SHOW_MESSAGES = []DebugLevel{ERROR} //, INFO, MESSAGE}
 
 type DebugLevel int
 
@@ -240,5 +241,60 @@ func GenerateTLSConfig() *tls.Config {
 	return &tls.Config{
 		Certificates: []tls.Certificate{tlsCert},
 		NextProtos:   []string{"exemplo"},
+	}
+}
+
+func GetServerTLSConfig() *tls.Config {
+	pwd, _ := os.Getwd()
+	cert, err := tls.LoadX509KeyPair(pwd+"/app/server/ssl/localhost.crt", pwd+"/app/server/ssl/localhost.key")
+	if err != nil {
+		log.Fatal("Error loading certificate. ", err)
+	}
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		NextProtos:   []string{"exemplo"},
+	}
+	return tlsConfig
+}
+
+func GetClientTLSConfig() *tls.Config {
+	pwd, _ := os.Getwd()
+
+	trustCert, err := ioutil.ReadFile(pwd+"/app/server/ssl/myCA.pem")
+	if err != nil {
+		fmt.Println("Error loading trust certificate. ",err)
+	}
+	certs := x509.NewCertPool()
+	if !certs.AppendCertsFromPEM(trustCert) {
+		fmt.Println("Error installing trust certificate.")
+	}
+
+
+	// connect to server
+	tlsConfig := &tls.Config{
+		//InsecureSkipVerify: true,
+		RootCAs: certs,
+		NextProtos:         []string{"exemplo"},
+	}
+	return tlsConfig
+}
+
+func WriteToFile(filename string, data string) {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println(err)
+
+		file, err = os.Create(filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+	}
+	defer file.Close()
+
+
+	if _, err := file.WriteString(data); err != nil {
+		log.Fatal(err)
 	}
 }
